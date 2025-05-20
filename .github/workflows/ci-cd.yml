@@ -5,8 +5,6 @@ on:
     branches:
       - main
   workflow_dispatch:
-    paths:
-      - 'backend/**'
 
 jobs:
   build-test-analyze-deploy:
@@ -16,6 +14,7 @@ jobs:
       # Ajustamos el nombre y destino para que sea
       # /home/ec2-user/myapp.jar en lugar de /opt/myapp
       JAR_NAME: build/libs/pagos-0.0.1-SNAPSHOT.jar
+      REMOTE_JAR_NAME: myapp.jar
       REMOTE_DIR: /home/ec2-user
       SERVICE_NAME: myapp
 
@@ -60,10 +59,10 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: ./gradlew build sonar --info
 
-      - name: Preparar JAR
-        run: |
-          # Copiamos el jar generado al nombre fijo
-          cp build/libs/pagos-0.0.1-SNAPSHOT.jar ${{ env.JAR_NAME }}
+#      - name: Preparar JAR
+#        run: |
+#          # Copiamos el jar generado al nombre fijo
+#          cp pagos-0.0.1-SNAPSHOT.jar ${{ env.JAR_NAME }}
 
       - name: Generar archivo .env
         run: |
@@ -93,7 +92,7 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           source: ${{ env.JAR_NAME }}
-          target: ${{ env.REMOTE_DIR }}/${{ env.JAR_NAME }}
+          target: ${{ env.REMOTE_DIR }}/${{ env.REMOTE_JAR_NAME }}
           overwrite: true
 
       - name: Detener y arrancar servicio
