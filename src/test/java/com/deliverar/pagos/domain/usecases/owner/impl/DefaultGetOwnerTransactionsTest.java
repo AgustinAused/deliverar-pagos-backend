@@ -47,7 +47,6 @@ class DefaultGetOwnerTransactionsTest {
 
     @Test
     void get_ShouldReturnPageOfTransactions_WithCorrectPageable() {
-        // Arrange
         int page = 1;
         int size = 2;
         Sort.Direction direction = Sort.Direction.DESC;
@@ -65,10 +64,8 @@ class DefaultGetOwnerTransactionsTest {
         when(transactionRepository.findByOriginOwner_IdOrDestinationOwner_Id(
                 eq(owner.getId()), eq(owner.getId()), any())).thenReturn(stubPage);
 
-        // Act
         Page<Transaction> result = getTransactions.get(owner, page, size, direction);
 
-        // Assert
         assertEquals(stubPage, result, "Expected stub page to be returned");
         ArgumentCaptor<org.springframework.data.domain.Pageable> captor = ArgumentCaptor.forClass(org.springframework.data.domain.Pageable.class);
         verify(transactionRepository, times(1))
@@ -81,14 +78,11 @@ class DefaultGetOwnerTransactionsTest {
 
     @Test
     void get_ShouldReturnEmptyPage_WhenNoTransactions() {
-        // Arrange
         when(transactionRepository.findByOriginOwner_IdOrDestinationOwner_Id(
                 any(), any(), any())).thenReturn(Page.empty());
 
-        // Act
         Page<Transaction> result = getTransactions.get(owner, 0, 10, Sort.Direction.ASC);
 
-        // Assert
         assertTrue(result.isEmpty(), "Expected empty page when no transactions found");
         verify(transactionRepository).findByOriginOwner_IdOrDestinationOwner_Id(eq(owner.getId()), eq(owner.getId()), any());
     }

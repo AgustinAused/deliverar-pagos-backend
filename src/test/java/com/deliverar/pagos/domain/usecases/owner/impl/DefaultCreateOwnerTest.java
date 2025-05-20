@@ -40,7 +40,6 @@ class DefaultCreateOwnerTest {
 
     @Test
     void create_ShouldReturn_SavedOwner() {
-        // Arrange
         Owner stubOwner = Owner.builder()
                 .id(UUID.randomUUID())
                 .name(name)
@@ -57,10 +56,8 @@ class DefaultCreateOwnerTest {
                 .build();
         when(ownerRepository.save(any(Owner.class))).thenReturn(stubOwner);
 
-        // Act
         Owner result = createOwner.create(name, email, ownerType);
 
-        // Assert
         assertEquals(stubOwner, result, "Expected the saved owner to be returned");
         ArgumentCaptor<Owner> captor = ArgumentCaptor.forClass(Owner.class);
         verify(ownerRepository, times(1)).save(captor.capture());

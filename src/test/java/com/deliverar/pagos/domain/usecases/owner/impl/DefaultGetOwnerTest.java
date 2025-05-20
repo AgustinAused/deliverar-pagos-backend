@@ -27,7 +27,6 @@ class DefaultGetOwnerTest {
 
     @Test
     void get_ShouldReturnOwner_WhenFound() {
-        // Arrange
         UUID id = UUID.randomUUID();
         Owner stub = Owner.builder()
                 .id(id)
@@ -36,21 +35,17 @@ class DefaultGetOwnerTest {
                 .build();
         when(ownerRepository.findById(id)).thenReturn(Optional.of(stub));
 
-        // Act
         Owner result = getOwner.get(id);
 
-        // Assert
         assertSame(stub, result, "Expected the stub Owner to be returned");
         verify(ownerRepository, times(1)).findById(id);
     }
 
     @Test
     void get_ShouldThrowNoSuchElementException_WhenNotFound() {
-        // Arrange
         UUID id = UUID.randomUUID();
         when(ownerRepository.findById(id)).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(NoSuchElementException.class,
                 () -> getOwner.get(id),
                 "Expected NoSuchElementException when Owner is not present");
