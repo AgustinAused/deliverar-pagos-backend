@@ -1,33 +1,14 @@
 package com.deliverar.pagos.domain.entities;
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+public enum Permission {
+    // recurso:operación:scope
+    TRANSACTION_READ_OWN,    // consultar propias transacciones
+    BALANCE_READ_OWN,        // consultar propio balance
+    BALANCE_MODIFY_OWN,     // modificar propio saldo fiat/crypto
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+    TRANSACTION_READ_ALL,    // consultar todas las transacciones
+    BALANCE_READ_ALL,        // consultar todos los balances
 
-@Entity
-@Table(name = "permissions")
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class Permission {
-    @Id
-    @Column(name = "id", nullable = false, updatable = false)
-    private UUID id;
-
-    @Column(name = "name", nullable = false, unique = true)
-    private String name;
-
-    @Column(name = "description")
-    private String description;
-
-    @Builder.Default
-    @ManyToMany(mappedBy = "permissions")
-    private Set<Role> roles = new HashSet<>();
+    CRYPTO_MINT,             // emitir criptos
+    CRYPTO_BURN              // quemar criptos
 }

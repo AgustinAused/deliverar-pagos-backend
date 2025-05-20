@@ -1,42 +1,40 @@
 package com.deliverar.pagos.domain.entities;
 
-import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Set;
-import java.util.UUID;
 
-@Entity
-@Table(name = "roles")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class Role {
-    @Id
-    @Column(name = "id", nullable = false, updatable = false)
-    private UUID id;
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public enum Role {
+    CORE(EnumSet.of(
+            Permission.TRANSACTION_READ_OWN,
+            Permission.BALANCE_READ_OWN,
+            Permission.BALANCE_MODIFY_OWN
+    )),
+    ADMIN(EnumSet.of(
+            Permission.CRYPTO_MINT,
+            Permission.CRYPTO_BURN,
+            Permission.TRANSACTION_READ_ALL,
+            Permission.BALANCE_READ_ALL
+    )),
+    AUDITOR(EnumSet.of(
+            Permission.TRANSACTION_READ_ALL,
+            Permission.BALANCE_READ_ALL
+    )),
+    TEST(Collections.unmodifiableSet(
+            EnumSet.allOf(Permission.class)
+    ));
 
-    @Column(name = "name", nullable = false, unique = true)
-    private String name;
+    private final Set<Permission> UserPermisions;
 
-    @Column(name = "description")
-    private String description;
+    public Set<Permission> getPermissions() {
+        return UserPermisions;
+    }
 
-    @Builder.Default
-    @ManyToMany(mappedBy = "roles")
-    private Set<User> users = new HashSet<>();
-
-    @Builder.Default
-    @ManyToMany
-    @JoinTable(
-            name = "role_permissions",
-            joinColumns = @JoinColumn(name = "role_id"),
-            inverseJoinColumns = @JoinColumn(name = "permission_id")
-    )
-    private Set<Permission> permissions = new HashSet<>();
+    public boolean hasPermission(Permission p) {
+        return UserPermisions.contains(p);
+    }
 }
