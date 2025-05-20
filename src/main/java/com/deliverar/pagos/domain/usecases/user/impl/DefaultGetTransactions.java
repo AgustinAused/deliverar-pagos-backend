@@ -1,8 +1,8 @@
-package com.deliverar.pagos.domain.usecases.owner.impl;
+package com.deliverar.pagos.domain.usecases.user.impl;
 
 import com.deliverar.pagos.domain.entities.Transaction;
 import com.deliverar.pagos.domain.repositories.TransactionRepository;
-import com.deliverar.pagos.domain.usecases.owner.GetTransactions;
+import com.deliverar.pagos.domain.usecases.user.GetTransactions;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
