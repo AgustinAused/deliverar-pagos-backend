@@ -66,6 +66,7 @@ jobs:
 
       - name: Generar archivo .env
         run: |
+          rm -rf .env  # 👈 fuerza que sea archivo
           cat <<EOF > .env
           DB_URL=jdbc:postgresql://${{ secrets.RDS_HOST }}:5432/deliverar_db
           DB_USER=${{ secrets.RDS_USER }}
@@ -81,8 +82,8 @@ jobs:
           host: ${{ secrets.BACKEND_HOST }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: ".env"
-          target: "${{ env.REMOTE_DIR }}/.env"
+          source: "./.env"
+          target: "${{ env.REMOTE_DIR }}/"
           overwrite: true
 
       - name: Subir JAR a EC2
@@ -91,8 +92,8 @@ jobs:
           host: ${{ secrets.BACKEND_HOST }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: ${{ env.JAR_NAME }}
-          target: ${{ env.REMOTE_DIR }}/${{ env.REMOTE_JAR_NAME }}
+          source: "${{ env.JAR_NAME }}"
+          target: "${{ env.REMOTE_DIR }}/${{ env.REMOTE_JAR_NAME }}"
           overwrite: true
 
       - name: Detener y arrancar servicio
