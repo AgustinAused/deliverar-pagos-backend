@@ -1,10 +1,7 @@
 package com.deliverar.pagos.application.controllers;
 
 import com.deliverar.pagos.application.mappers.OwnerMapper;
-import com.deliverar.pagos.domain.dtos.CreateOwnerRequest;
-import com.deliverar.pagos.domain.dtos.CreateOwnerResponse;
-import com.deliverar.pagos.domain.dtos.FiatExchangeRequest;
-import com.deliverar.pagos.domain.dtos.GetTransactionsResponse;
+import com.deliverar.pagos.domain.dtos.*;
 import com.deliverar.pagos.domain.entities.Owner;
 import com.deliverar.pagos.domain.entities.Transaction;
 import com.deliverar.pagos.domain.usecases.owner.CreateOwner;
@@ -38,8 +35,20 @@ public class OwnerController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CreateOwnerResponse createOAuthState(@RequestBody CreateOwnerRequest request) {
+        log.info("Create owner request: {}", request);
         Owner owner = createOwner.create(request.getName(), request.getEmail(), request.getOwnerType());
         return CreateOwnerResponse.builder().id(owner.getId()).build();
+    }
+
+    @GetMapping("/{id}/balances")
+    @ResponseStatus(HttpStatus.OK)
+    public GetBalancesResponse getBalances(@PathVariable UUID id) {
+        log.info("Get balances for owner {}", id);
+        Owner owner = getOwner.get(id);
+        return GetBalancesResponse.builder()
+                .fiatBalance(owner.getWallet().getFiatBalance())
+                .cryptoBalance(owner.getWallet().getCryptoBalance())
+                .build();
     }
 
     @GetMapping("/{id}/transactions")
