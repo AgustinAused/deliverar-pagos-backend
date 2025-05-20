@@ -35,12 +35,14 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
+                .sessionManagement(s -> s.sessionCreationPolicy(STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login", "/api/auth/refresh").permitAll()
                         .requestMatchers("/api/transactions/**").hasAnyRole("ADMIN", "AUDITOR")
-                        .requestMatchers("/api/user/**").hasRole("ADMIN")
+                        .requestMatchers("/api/users/**").hasRole("ADMIN")
+                        .requestMatchers("/api/owners/transactions").hasAnyRole("ADMIN", "AUDITOR")
                         .requestMatchers("/api/owners/**").hasRole("CORE")
+                        .requestMatchers("/api/delivercoin/transfer/**", "/api/delivercoin/balance").hasRole("CORE")
                         .requestMatchers("/api/delivercoin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )

@@ -22,7 +22,7 @@ public class UserController {
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     public CreateUserResponse create(@RequestBody CreateUserRequest request) {
-        User user = createUser.create(request.getName(), request.getEmail(), passwordEncoder.encode(request.getPassword()), request.getRole());
+        User user = createUser.create(request.getName(), request.getEmail().toLowerCase(), passwordEncoder.encode(request.getPassword()), request.getRole());
         return CreateUserResponse.builder().id(user.getId()).build();
     }
 }

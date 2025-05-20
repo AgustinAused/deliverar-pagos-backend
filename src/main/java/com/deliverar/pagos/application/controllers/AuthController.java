@@ -2,9 +2,9 @@ package com.deliverar.pagos.application.controllers;
 
 import com.deliverar.pagos.domain.dtos.AuthRequest;
 import com.deliverar.pagos.domain.dtos.AuthResponse;
-import com.deliverar.pagos.infrastructure.security.JwtUtil;
 import com.deliverar.pagos.domain.entities.User;
 import com.deliverar.pagos.domain.repositories.UserRepository;
+import com.deliverar.pagos.infrastructure.security.JwtUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -56,7 +56,7 @@ public class AuthController {
         );
         String refreshToken = jwtUtil.generateRefreshToken(username);
 
-        return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken, expiresIn));
+        return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken, expiresIn, user.getRole(), user.getRole().getPermissions()));
     }
 
     @PostMapping("/refresh")

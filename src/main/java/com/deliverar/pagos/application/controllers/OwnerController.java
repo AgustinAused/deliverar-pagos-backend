@@ -35,7 +35,7 @@ public class OwnerController {
     @ResponseStatus(HttpStatus.CREATED)
     public CreateOwnerResponse createOAuthState(@RequestBody CreateOwnerRequest request) {
         log.info("Create owner request: {}", request);
-        Owner owner = createOwner.create(request.getName(), request.getEmail(), request.getOwnerType());
+        Owner owner = createOwner.create(request.getName(), request.getEmail().toLowerCase(), request.getOwnerType());
         return CreateOwnerResponse.builder().id(owner.getId()).build();
     }
 
