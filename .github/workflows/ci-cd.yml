@@ -38,7 +38,7 @@ jobs:
           CONTRACT_ADDRESS: ${{ secrets.CONTRACT_ADDRESS }}
           WALLET_PRIVATE_KEY: ${{ secrets.WALLET_PRIVATE_KEY }}
         run: |
-          ./gradlew clean build
+          gradlew clean build
 
       - name: Cache SonarQube packages
         uses: actions/cache@v3
