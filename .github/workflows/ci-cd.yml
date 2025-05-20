@@ -36,6 +36,9 @@ jobs:
           WEB3J_CLIENT_ADDRESS: ${{ secrets.WEB3J_CLIENT_ADDRESS }}
           CONTRACT_ADDRESS: ${{ secrets.CONTRACT_ADDRESS }}
           WALLET_PRIVATE_KEY: ${{ secrets.WALLET_PRIVATE_KEY }}
+          ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
+          ADMIN_MAIL: ${{ secrets.ADMIN_MAIL }}
+          ADMIN_PASS: ${{ secrets.ADMIN_PASS }}
         run: |
           chmod +x ./gradlew
           ./gradlew clean build
@@ -74,6 +77,9 @@ jobs:
           WEB3J_CLIENT_ADDRESS=${{ secrets.WEB3J_CLIENT_ADDRESS }}
           CONTRACT_ADDRESS=${{ secrets.CONTRACT_ADDRESS }}
           WALLET_PRIVATE_KEY=${{ secrets.WALLET_PRIVATE_KEY }}
+          ADMIN_NAME=${{ secrets.ADMIN_NAME }}
+          ADMIN_MAIL=${{ secrets.ADMIN_MAIL }}
+          ADMIN_PASS=${{ secrets.ADMIN_PASS }}
           EOF
           ls -la .env
           
