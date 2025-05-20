@@ -68,9 +68,9 @@ jobs:
         run: |
           rm -rf .env  # 👈 fuerza que sea archivo
           cat <<EOF > .env
-          DB_URL=jdbc:postgresql://${{ secrets.RDS_HOST }}:5432/deliverar_db
-          DB_USER=${{ secrets.RDS_USER }}
-          DB_PASSWORD=${{ secrets.RDS_PASSWORD }}
+          RDS_HOST=${{ secrets.RDS_HOST }}
+          RDS_USER=${{ secrets.RDS_USER }}
+          RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}
           WEB3J_CLIENT_ADDRESS=${{ secrets.WEB3J_CLIENT_ADDRESS }}
           CONTRACT_ADDRESS=${{ secrets.CONTRACT_ADDRESS }}
           WALLET_PRIVATE_KEY=${{ secrets.WALLET_PRIVATE_KEY }}
