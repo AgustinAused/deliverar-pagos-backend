@@ -39,6 +39,7 @@ jobs:
           ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
           ADMIN_MAIL: ${{ secrets.ADMIN_MAIL }}
           ADMIN_PASS: ${{ secrets.ADMIN_PASS }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
           chmod +x ./gradlew
           ./gradlew clean build
@@ -80,6 +81,7 @@ jobs:
           ADMIN_NAME=${{ secrets.ADMIN_NAME }}
           ADMIN_MAIL=${{ secrets.ADMIN_MAIL }}
           ADMIN_PASS=${{ secrets.ADMIN_PASS }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
           EOF
           ls -la .env
           
