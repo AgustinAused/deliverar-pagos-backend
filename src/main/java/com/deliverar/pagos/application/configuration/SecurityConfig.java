@@ -40,7 +40,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/login", "/api/auth/refresh").permitAll()
                         .requestMatchers("/api/transactions/**").hasAnyRole("ADMIN", "AUDITOR")
                         .requestMatchers("/api/user/**").hasRole("ADMIN")
-                        .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/owners/**").hasRole("CORE")
                         .requestMatchers("/api/delivercoin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
