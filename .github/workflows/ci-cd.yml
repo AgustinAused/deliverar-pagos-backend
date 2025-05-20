@@ -113,8 +113,6 @@ jobs:
           script: |
             # Paramos el servicio (si ya existe)
             sudo systemctl stop ${{ env.SERVICE_NAME }}.service || true
-            # (opcional) podemos asegurarnos de que no haya procesos java colgados
-            pkill -f '/home/ec2-user/myapp.jar' || true
             # Arrancamos el servicio —asegúrate de que tu unit file apunte a este jar:
-            sudo systemctl start ${{ env.SERVICE_NAME }}.service
+            sudo systemctl restart ${{ env.SERVICE_NAME }}.service
             sudo systemctl status ${{ env.SERVICE_NAME }}.service --no-pager
