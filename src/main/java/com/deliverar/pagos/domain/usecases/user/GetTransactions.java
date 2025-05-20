@@ -1,6 +1,5 @@
-package com.deliverar.pagos.domain.usecases.owner;
+package com.deliverar.pagos.domain.usecases.user;
 
-import com.deliverar.pagos.domain.entities.Owner;
 import com.deliverar.pagos.domain.entities.Transaction;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
