@@ -15,7 +15,7 @@ jobs:
     env:
       # Ajustamos el nombre y destino para que sea
       # /home/ec2-user/myapp.jar en lugar de /opt/myapp
-      JAR_NAME: pagos-0.0.1-SNAPSHOT.jar
+      JAR_NAME: build/libs/pagos-0.0.1-SNAPSHOT.jar
       REMOTE_DIR: /home/ec2-user
       SERVICE_NAME: myapp
 
