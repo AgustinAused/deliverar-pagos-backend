@@ -1,10 +1,8 @@
 package com.deliverar.pagos.domain.usecases.owner.impl;
 
-import com.deliverar.pagos.domain.entities.Owner;
-import com.deliverar.pagos.domain.entities.OwnerType;
-import com.deliverar.pagos.domain.entities.Wallet;
-import com.deliverar.pagos.domain.entities.ExchangeOperation;
+import com.deliverar.pagos.domain.entities.*;
 import com.deliverar.pagos.domain.exceptions.BadRequestException;
+import com.deliverar.pagos.domain.repositories.FiatTransactionRepository;
 import com.deliverar.pagos.domain.repositories.OwnerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,10 +25,14 @@ class DefaultExchangeFiatTest {
     @Mock
     private OwnerRepository ownerRepository;
 
+    @Mock
+    private FiatTransactionRepository fiatTransactionRepository;
+
     @InjectMocks
     private DefaultExchangeFiat exchangeFiat;
 
     private Owner owner;
+    private FiatTransaction fiatTransaction;
 
     @BeforeEach
     void setUp() {
@@ -56,6 +58,7 @@ class DefaultExchangeFiatTest {
         assertEquals(new BigDecimal("150.00"), result);
         ArgumentCaptor<Owner> captor = ArgumentCaptor.forClass(Owner.class);
         verify(ownerRepository, times(1)).save(captor.capture());
+        verify(fiatTransactionRepository, times(1)).save(any());
         assertEquals(new BigDecimal("150.00"), captor.getValue().getWallet().getFiatBalance());
     }
 
@@ -64,6 +67,7 @@ class DefaultExchangeFiatTest {
         BigDecimal result = exchangeFiat.exchange(owner, new BigDecimal("30.00"), ExchangeOperation.OUTFLOW);
 
         assertEquals(new BigDecimal("70.00"), result);
+        verify(fiatTransactionRepository, times(1)).save(any());
         verify(ownerRepository, times(1)).save(owner);
     }
 
