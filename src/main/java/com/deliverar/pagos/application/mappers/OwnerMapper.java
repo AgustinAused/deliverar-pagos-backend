@@ -1,7 +1,9 @@
 package com.deliverar.pagos.application.mappers;
 
+import com.deliverar.pagos.domain.dtos.FiatTransactionDto;
 import com.deliverar.pagos.domain.dtos.OwnerDto;
 import com.deliverar.pagos.domain.dtos.TransactionDto;
+import com.deliverar.pagos.domain.entities.FiatTransaction;
 import com.deliverar.pagos.domain.entities.Owner;
 import com.deliverar.pagos.domain.entities.Transaction;
 import org.springframework.stereotype.Component;
@@ -39,5 +41,22 @@ public class OwnerMapper {
 
     public List<TransactionDto> toTransactionDtos(List<Transaction> transactions) {
         return transactions.stream().map(this::toTransactionDto).collect(Collectors.toList());
+    }
+
+    public FiatTransactionDto toFiatTransactionDto(FiatTransaction entity) {
+        return FiatTransactionDto.builder()
+                .id(entity.getId())
+                .owner(toOwnerDto(entity.getOwner()))
+                .amount(BigDecimal.valueOf(entity.getAmount().doubleValue()))
+                .currency(entity.getCurrency())
+                .concept(entity.getConcept().name())
+                .transactionDate(entity.getTransactionDate())
+                .createdAt(entity.getCreatedAt())
+                .status(entity.getStatus())
+                .build();
+    }
+
+    public List<FiatTransactionDto> toFiatTransactionDtos(List<FiatTransaction> transactions) {
+        return transactions.stream().map(this::toFiatTransactionDto).collect(Collectors.toList());
     }
 }
