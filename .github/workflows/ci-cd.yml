@@ -63,7 +63,7 @@ jobs:
       - name: Preparar JAR
         run: |
           # Copiamos el jar generado al nombre fijo
-          cp build/libs/*.jar ${{ env.JAR_NAME }}
+          cp build/libs/pagos-0.0.1-SNAPSHOT.jar ${{ env.JAR_NAME }}
 
       - name: Generar archivo .env
         run: |
