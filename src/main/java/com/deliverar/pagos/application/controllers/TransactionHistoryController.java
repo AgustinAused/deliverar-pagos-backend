@@ -3,7 +3,7 @@ package com.deliverar.pagos.application.controllers;
 import com.deliverar.pagos.application.mappers.OwnerMapper;
 import com.deliverar.pagos.domain.dtos.GetTransactionsResponse;
 import com.deliverar.pagos.domain.entities.Transaction;
-import com.deliverar.pagos.domain.usecases.owner.GetTransactions;
+import com.deliverar.pagos.domain.usecases.user.GetTransactions;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
