@@ -28,7 +28,7 @@ public class OwnerMapper {
                 .id(entity.getId())
                 .originOwner(toOwnerDto(entity.getOriginOwner()))
                 .destinationOwner(toOwnerDto(entity.getDestinationOwner()))
-                .amount(BigDecimal.valueOf(entity.getAmount().doubleValue())) //ToDo: check if BigInteger is the correct type
+                .amount(entity.getAmount())
                 .currency(entity.getCurrency())
                 .conversionRate(entity.getConversionRate())
                 .concept(entity.getConcept())
