@@ -1,9 +1,10 @@
 package com.deliverar.pagos.application.controllers;
 
-import com.deliverar.pagos.domain.entities.Transaction;
+import com.deliverar.pagos.adapters.crypto.service.DeliverCoinService;
 import com.deliverar.pagos.domain.dtos.MintBurnRequest;
 import com.deliverar.pagos.domain.dtos.TransactionResponse;
 import com.deliverar.pagos.domain.dtos.TransferRequest;
+import com.deliverar.pagos.domain.entities.Transaction;
 import com.deliverar.pagos.adapters.crypto.service.DeliverCoinService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
-import java.math.BigInteger;
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.UUID;
 
@@ -29,6 +30,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 public class DeliverCoinController {
 
     private final DeliverCoinService deliverCoinService;
+
+    @GetMapping()
+    public ResponseEntity<?> getCryptoSummaryInfo() {
+        try {
+            return ResponseEntity.ok(deliverCoinService.getCryptoSummaryInfo());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+
+    }
+
 
     @Operation(summary = "Iniciar transferencia de tokens",
             description = "Inicia una transferencia asíncrona de tokens entre dos usuarios")
@@ -127,7 +139,7 @@ public class DeliverCoinController {
             @Parameter(description = "Email del usuario", required = true)
             @RequestParam String email) {
         try {
-            BigInteger balance = deliverCoinService.balanceOf(email);
+            BigDecimal balance = deliverCoinService.balanceOf(email);
             return ResponseEntity.ok(Map.of("email", email, "balance", balance));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
@@ -146,7 +158,7 @@ public class DeliverCoinController {
     @GetMapping("/supply")
     public ResponseEntity<Map<String,Object>> totalSupply() {
         try {
-            BigInteger supply = deliverCoinService.totalSupply();
+            BigDecimal supply = deliverCoinService.totalSupply();
             return ResponseEntity.ok(Map.of("totalSupply", supply));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));

@@ -11,7 +11,8 @@ import java.math.BigDecimal;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MintBurnRequest {
-    private String email;
-    private BigDecimal amount;
+public class GetCryptoSummaryInfoResponse {
+    Long totalOfTransactions;
+    Long totalOfOwners;
+    BigDecimal totalOfCryptos;
 }
