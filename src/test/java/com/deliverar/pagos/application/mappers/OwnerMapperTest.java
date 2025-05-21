@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -35,7 +34,7 @@ class OwnerMapperTest {
                 .id(UUID.randomUUID())
                 .originOwner(owner)
                 .destinationOwner(owner)
-                .amount(new BigInteger("123"))
+                .amount(new BigDecimal("123"))
                 .currency(CurrencyType.FIAT)
                 .conversionRate(new BigDecimal("1.0"))
                 .concept("payment")

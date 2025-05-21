@@ -19,6 +19,9 @@ import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import static com.deliverar.pagos.adapters.crypto.service.AmountConverter.toDecimal;
+import static com.deliverar.pagos.adapters.crypto.service.AmountConverter.toInteger;
+
 
 @Service
 public class DeliverCoinService {
@@ -77,7 +80,7 @@ public class DeliverCoinService {
         CompletableFuture.runAsync(() -> {
             try {
                 TransactionReceipt receipt = deliverCoin
-                        .transfer(request.getFromEmail(), request.getToEmail(), request.getAmount())
+                        .transfer(request.getFromEmail(), request.getToEmail(), toInteger(request.getAmount()))
                         .send();
 
                 tx.setStatus(TransactionStatus.SUCCESS);
@@ -103,19 +106,19 @@ public class DeliverCoinService {
         return transactionRepository.findById(trackingId).orElseThrow();
     }
 
-    public TransactionReceipt mint(BigInteger amount, String toEmail) throws Exception {
-        return deliverCoin.mint(amount, toEmail).send();
+    public TransactionReceipt mint(BigDecimal amount, String toEmail) throws Exception {
+        return deliverCoin.mint(toInteger(amount), toEmail).send();
     }
 
-    public TransactionReceipt burn(BigInteger amount, String fromEmail) throws Exception {
-        return deliverCoin.burn(amount, fromEmail).send();
+    public TransactionReceipt burn(BigDecimal amount, String fromEmail) throws Exception {
+        return deliverCoin.burn(toInteger(amount), fromEmail).send();
     }
 
-    public BigInteger balanceOf(String email) throws Exception {
-        return deliverCoin.balanceOf(email).send();
+    public BigDecimal balanceOf(String email) throws Exception {
+        return toDecimal(deliverCoin.balanceOf(email).send());
     }
 
-    public BigInteger totalSupply() throws Exception {
-        return deliverCoin.totalSupply().send();
+    public BigDecimal totalSupply() throws Exception {
+        return toDecimal(deliverCoin.totalSupply().send());
     }
 }

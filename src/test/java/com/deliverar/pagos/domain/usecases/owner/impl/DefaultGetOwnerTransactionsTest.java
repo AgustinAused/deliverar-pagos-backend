@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
 import java.util.List;
@@ -54,7 +55,7 @@ class DefaultGetOwnerTransactionsTest {
                 .id(UUID.randomUUID())
                 .originOwner(owner)
                 .destinationOwner(owner)
-                .amount(new BigInteger("10"))
+                .amount(new BigDecimal("10"))
                 .currency(CurrencyType.FIAT)
                 .status(TransactionStatus.SUCCESS)
                 .transactionDate(Instant.now())
