@@ -1,5 +1,6 @@
 package com.deliverar.pagos.adapters.crypto.service;
 
+import com.deliverar.pagos.domain.dtos.GetCryptoSummaryInfoResponse;
 import com.deliverar.pagos.domain.dtos.TransferRequest;
 import com.deliverar.pagos.domain.entities.*;
 import com.deliverar.pagos.domain.exceptions.BadRequestException;
@@ -139,5 +140,13 @@ public class DeliverCoinService {
 
     public BigDecimal totalSupply() throws Exception {
         return toDecimal(deliverCoin.totalSupply().send());
+    }
+
+    public GetCryptoSummaryInfoResponse getCryptoSummaryInfo() throws Exception {
+        return GetCryptoSummaryInfoResponse.builder()
+                .totalOfTransactions(transactionRepository.count())
+                .totalOfOwners(ownerRepository.count())
+                .totalOfCryptos(totalSupply())
+                .build();
     }
 }
