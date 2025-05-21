@@ -31,14 +31,23 @@ public class DeliverCoinController {
 
     private final DeliverCoinService deliverCoinService;
 
+    @Operation(
+            summary = "Get DeliverCoin summary info",
+            description = "Returns a summary of DeliverCoin token statistics and blockchain status"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Summary info retrieved successfully",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Internal server error",
+                    content = @Content)
+    })
     @GetMapping()
-    public ResponseEntity<?> getCryptoSummaryInfo() {
+    public ResponseEntity<Object> getCryptoSummaryInfo() {
         try {
             return ResponseEntity.ok(deliverCoinService.getCryptoSummaryInfo());
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
-
     }
 
 
