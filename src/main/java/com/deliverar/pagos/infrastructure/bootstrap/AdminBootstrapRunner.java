@@ -31,7 +31,7 @@ public class AdminBootstrapRunner implements CommandLineRunner {
     public void run(String... args) {
         if (userRepo.count() == 0) {
             User admin = new User();
-            admin.setName(adminEmail);
+            admin.setName(name);
             admin.setEmail(adminEmail);
             admin.setPasswordHash(encoder.encode(adminPass));
             admin.setRole(Role.ADMIN);

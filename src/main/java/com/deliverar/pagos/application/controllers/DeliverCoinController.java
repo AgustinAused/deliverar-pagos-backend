@@ -85,7 +85,7 @@ public class DeliverCoinController {
                 content = @Content)
     })
     @PostMapping("/mint")
-    public ResponseEntity<?> mint(@RequestBody MintBurnRequest request) {
+    public ResponseEntity<Map<String,String>> mint(@RequestBody MintBurnRequest request) {
         try {
             TransactionReceipt receipt = deliverCoinService.mint(request.getAmount(), request.getEmail());
             return ResponseEntity.ok(Map.of("status", "success", "transactionHash", receipt.getTransactionHash()));
@@ -104,7 +104,7 @@ public class DeliverCoinController {
                 content = @Content)
     })
     @PostMapping("/burn")
-    public ResponseEntity<?> burn(@RequestBody MintBurnRequest request) {
+    public ResponseEntity<Map<String,String>> burn(@RequestBody MintBurnRequest request) {
         try {
             TransactionReceipt receipt = deliverCoinService.burn(request.getAmount(), request.getEmail());
             return ResponseEntity.ok(Map.of("status", "success", "transactionHash", receipt.getTransactionHash()));
