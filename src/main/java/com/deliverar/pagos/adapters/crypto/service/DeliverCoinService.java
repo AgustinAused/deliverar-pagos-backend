@@ -2,6 +2,7 @@ package com.deliverar.pagos.adapters.crypto.service;
 
 import com.deliverar.pagos.domain.dtos.TransferRequest;
 import com.deliverar.pagos.domain.entities.*;
+import com.deliverar.pagos.domain.exceptions.BadRequestException;
 import com.deliverar.pagos.domain.repositories.OwnerRepository;
 import com.deliverar.pagos.domain.repositories.TransactionRepository;
 import jakarta.annotation.PostConstruct;
@@ -57,11 +58,16 @@ public class DeliverCoinService {
     }
 
     public UUID asyncTransfer(TransferRequest request) {
-        Owner fromOwner = ownerRepository.findByEmail(request.getFromEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Owner no encontrado: " + request.getFromEmail()));
+        Owner fromOwner = getOwnerByEmail(request.getFromEmail());
+        Owner toOwner = getOwnerByEmail(request.getToEmail());
 
-        Owner toOwner = ownerRepository.findByEmail(request.getToEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado: " + request.getToEmail()));
+        BigDecimal fromOwnerBalance = fromOwner.getWallet().getCryptoBalance();
+        if (fromOwnerBalance.compareTo(request.getAmount()) < 0) {
+            throw new BadRequestException("Insufficient crypto balance");
+        }
+
+        fromOwner.getWallet().setCryptoBalance(fromOwnerBalance.subtract(request.getAmount()));
+        toOwner.getWallet().setCryptoBalance(toOwner.getWallet().getCryptoBalance().add(request.getAmount()));
 
         Transaction tx = new Transaction();
         tx.setId(UUID.randomUUID());
@@ -86,6 +92,8 @@ public class DeliverCoinService {
                 tx.setStatus(TransactionStatus.SUCCESS);
                 tx.setBlockchainTxHash(receipt.getTransactionHash());
                 transactionRepository.save(tx);
+                ownerRepository.save(fromOwner);
+                ownerRepository.save(toOwner);
             } catch (Exception e) {
                 tx.setStatus(TransactionStatus.FAILURE);
                 transactionRepository.save(tx);
@@ -95,6 +103,10 @@ public class DeliverCoinService {
         return tx.getId();
     }
 
+    public Owner getOwnerByEmail(String email) {
+        return ownerRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Owner no encontrado: " + email));
+    }
 
     public String getEmailByOwnerId(UUID id) {
         return ownerRepository.findById(id)
@@ -107,10 +119,17 @@ public class DeliverCoinService {
     }
 
     public TransactionReceipt mint(BigDecimal amount, String toEmail) throws Exception {
+        Owner toOwner = getOwnerByEmail(toEmail);
+        toOwner.getWallet().setCryptoBalance(toOwner.getWallet().getCryptoBalance().add(amount));
+        ownerRepository.save(toOwner);
         return deliverCoin.mint(toInteger(amount), toEmail).send();
     }
 
     public TransactionReceipt burn(BigDecimal amount, String fromEmail) throws Exception {
+        Owner fromOwner = getOwnerByEmail(fromEmail);
+        fromOwner.getWallet().setCryptoBalance(fromOwner.getWallet().getCryptoBalance().subtract(amount));
+        ownerRepository.save(fromOwner);
+
         return deliverCoin.burn(toInteger(amount), fromEmail).send();
     }
 
