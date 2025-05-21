@@ -1,8 +1,12 @@
 package com.deliverar.pagos.adapters.rest.config;
 
+import org.springdoc.core.models.GroupedOpenApi;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.info.Contact;
+import io.swagger.v3.oas.annotations.info.License;
 import io.swagger.v3.oas.annotations.servers.Server;
 
 @Configuration
@@ -10,12 +14,19 @@ import io.swagger.v3.oas.annotations.servers.Server;
         info = @Info(
                 title = "Deliver.AR Pagos API",
                 version = "v1",
-                description = "Documentación de la API de Pagos"
+                description = "Documentación de la API de Pagos",
+                contact = @Contact(name = "Equipo Deliver.AR", email = "soporte@deliverar.com"),
+                license = @License(name = "MIT", url = "https://opensource.org/licenses/MIT")
         ),
         servers = @Server(url = "/")
 )
 public class SwaggerConfig {
-    // Con esta configuración mínima, SpringDoc expone:
-    // - OpenAPI JSON en /v3/api-docs
-    // - Swagger UI en /swagger-ui.html
+        @Bean
+        public GroupedOpenApi publicApi() {
+                return GroupedOpenApi.builder()
+                        .group("public")
+                        .pathsToMatch("/**")
+                        .build();
+        }
+
 }
