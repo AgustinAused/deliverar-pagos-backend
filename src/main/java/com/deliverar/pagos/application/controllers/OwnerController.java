@@ -6,6 +6,13 @@ import com.deliverar.pagos.domain.entities.FiatTransaction;
 import com.deliverar.pagos.domain.entities.Owner;
 import com.deliverar.pagos.domain.entities.Transaction;
 import com.deliverar.pagos.domain.usecases.owner.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -19,6 +26,7 @@ import java.util.UUID;
 /**
  * Owner controller.
  */
+@Tag(name = "Propietarios", description = "Operaciones relacionadas con propietarios, balances y transacciones")
 @RequestMapping("/api/owners")
 @RestController
 @RequiredArgsConstructor
@@ -31,17 +39,37 @@ public class OwnerController {
     private final GetOwnerFiatTransactions getOwnerFiatTransactions;
     private final ExchangeFiat exchangeFiat;
 
+    @Operation(summary = "Crear nuevo propietario",
+            description = "Crea un nuevo propietario en el sistema con su nombre, email y tipo")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Propietario creado exitosamente",
+                content = @Content(mediaType = "application/json",
+                        schema = @Schema(implementation = CreateOwnerResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos en la solicitud",
+                content = @Content)
+    })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CreateOwnerResponse createOAuthState(@RequestBody CreateOwnerRequest request) {
         log.info("Create owner request: {}", request);
-        Owner owner = createOwner.create(request.getName(), request.getEmail(), request.getOwnerType());
+        Owner owner = createOwner.create(request.getName(), request.getEmail().toLowerCase(), request.getOwnerType());
         return CreateOwnerResponse.builder().id(owner.getId()).build();
     }
 
+    @Operation(summary = "Obtener balances",
+            description = "Obtiene los balances de fiat y crypto de un propietario específico")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Balances recuperados exitosamente",
+                content = @Content(mediaType = "application/json",
+                        schema = @Schema(implementation = GetBalancesResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Propietario no encontrado",
+                content = @Content)
+    })
     @GetMapping("/{id}/balances")
     @ResponseStatus(HttpStatus.OK)
-    public GetBalancesResponse getBalances(@PathVariable UUID id) {
+    public GetBalancesResponse getBalances(
+            @Parameter(description = "ID del propietario", required = true)
+            @PathVariable UUID id) {
         log.info("Get balances for owner {}", id);
         Owner owner = getOwner.get(id);
         return GetBalancesResponse.builder()
@@ -92,10 +120,25 @@ public class OwnerController {
                 .build();
     }
 
+    @Operation(summary = "Realizar operación fiat",
+            description = "Realiza una operación de depósito o retiro de moneda fiat para un propietario específico")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Operación realizada exitosamente",
+                content = @Content(mediaType = "application/json",
+                        schema = @Schema(type = "number", format = "decimal",
+                                description = "Nuevo balance después de la operación"))),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos o fondos insuficientes",
+                content = @Content),
+        @ApiResponse(responseCode = "404", description = "Propietario no encontrado",
+                content = @Content)
+    })
     @PostMapping("/{id}/fiat")
     @ResponseStatus(HttpStatus.OK)
-    public BigDecimal exchangeOwnerFiat(@PathVariable UUID id,
-                                        @RequestBody FiatExchangeRequest request) {
+    public BigDecimal exchangeOwnerFiat(
+            @Parameter(description = "ID del propietario", required = true)
+            @PathVariable UUID id,
+            @Parameter(description = "Detalles de la operación fiat (monto y tipo de operación)", required = true)
+            @RequestBody FiatExchangeRequest request) {
         log.info("Exchange ownerId {} with amount {} and operation {}", id, request.getAmount(), request.getOperation());
         Owner owner = getOwner.get(id);
         return exchangeFiat.exchange(owner, request.getAmount(), request.getOperation());

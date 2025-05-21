@@ -28,13 +28,13 @@ public enum Role {
             EnumSet.allOf(Permission.class)
     ));
 
-    private final Set<Permission> UserPermisions;
+    private final Set<Permission> UserPermissions;
 
     public Set<Permission> getPermissions() {
-        return UserPermisions;
+        return UserPermissions;
     }
 
     public boolean hasPermission(Permission p) {
-        return UserPermisions.contains(p);
+        return UserPermissions.contains(p);
     }
 }

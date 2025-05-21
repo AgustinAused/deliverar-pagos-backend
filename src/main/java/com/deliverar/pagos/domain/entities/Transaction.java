@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -32,7 +31,7 @@ public class Transaction {
     private Owner destinationOwner;
 
     @Column(name = "amount", nullable = false)
-    private BigInteger amount;
+    private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
     private CurrencyType currency;
