@@ -21,6 +21,16 @@ public class DeliverCoinController {
 
     private final DeliverCoinService deliverCoinService;
 
+    @GetMapping()
+    public ResponseEntity<?> getCryptoSummaryInfo() {
+        try {
+            return ResponseEntity.ok(deliverCoinService.getCryptoSummaryInfo());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+
+    }
+
     @PostMapping("/transfer")
     public ResponseEntity<Map<String, Object>> transfer(@RequestBody TransferRequest request) {
         UUID trackingId = deliverCoinService.asyncTransfer(request);
