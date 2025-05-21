@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -20,7 +19,7 @@ public class TransactionDto {
     private UUID id;
     private OwnerDto originOwner;
     private OwnerDto destinationOwner;
-    private BigInteger amount;
+    private BigDecimal amount;
     private CurrencyType currency;
     private BigDecimal conversionRate;
     private String concept;

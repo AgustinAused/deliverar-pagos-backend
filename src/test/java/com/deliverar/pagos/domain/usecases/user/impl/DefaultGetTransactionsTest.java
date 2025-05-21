@@ -15,6 +15,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
 import java.util.List;
@@ -57,14 +58,14 @@ class DefaultGetTransactionsTest {
                 .id(UUID.randomUUID())
                 .originOwner(owner1)
                 .destinationOwner(owner2)
-                .amount(BigInteger.TEN)
+                .amount(BigDecimal.TEN)
                 .transactionDate(Instant.now())
                 .build();
         tx2 = Transaction.builder()
                 .id(UUID.randomUUID())
                 .originOwner(owner1)
                 .destinationOwner(owner2)
-                .amount(BigInteger.TWO)
+                .amount(BigDecimal.TWO)
                 .transactionDate(Instant.now())
                 .build();
     }

@@ -1,16 +1,16 @@
 package com.deliverar.pagos.application.controllers;
 
-import com.deliverar.pagos.domain.entities.Transaction;
+import com.deliverar.pagos.adapters.crypto.service.DeliverCoinService;
 import com.deliverar.pagos.domain.dtos.MintBurnRequest;
 import com.deliverar.pagos.domain.dtos.TransactionResponse;
 import com.deliverar.pagos.domain.dtos.TransferRequest;
-import com.deliverar.pagos.adapters.crypto.service.DeliverCoinService;
+import com.deliverar.pagos.domain.entities.Transaction;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
-import java.math.BigInteger;
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.UUID;
 
@@ -20,6 +20,7 @@ import java.util.UUID;
 public class DeliverCoinController {
 
     private final DeliverCoinService deliverCoinService;
+
     @PostMapping("/transfer")
     public ResponseEntity<Map<String, Object>> transfer(@RequestBody TransferRequest request) {
         UUID trackingId = deliverCoinService.asyncTransfer(request);
@@ -69,7 +70,7 @@ public class DeliverCoinController {
     @GetMapping("/balance")
     public ResponseEntity<?> getBalance(@RequestParam String email) {
         try {
-            BigInteger balance = deliverCoinService.balanceOf(email);
+            BigDecimal balance = deliverCoinService.balanceOf(email);
             return ResponseEntity.ok(Map.of("email", email, "balance", balance));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
@@ -79,7 +80,7 @@ public class DeliverCoinController {
     @GetMapping("/supply")
     public ResponseEntity<?> totalSupply() {
         try {
-            BigInteger supply = deliverCoinService.totalSupply();
+            BigDecimal supply = deliverCoinService.totalSupply();
             return ResponseEntity.ok(Map.of("totalSupply", supply));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
