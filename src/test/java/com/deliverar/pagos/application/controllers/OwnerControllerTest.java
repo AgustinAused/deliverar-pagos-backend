@@ -40,6 +40,8 @@ class OwnerControllerTest {
     @Mock
     private GetOwner getOwner;
     @Mock
+    private GetOwnerList getOwnerList;
+    @Mock
     private GetOwnerTransactions getOwnerTransactions;
     @Mock
     private GetOwnerFiatTransactions getOwnerFiatTransactions;
@@ -51,8 +53,7 @@ class OwnerControllerTest {
 
     @BeforeEach
     void setUp() {
-        controller = new OwnerController(ownerMapper, createOwner, getOwner,
-                getOwnerTransactions, getOwnerFiatTransactions, exchangeFiat);
+        controller = new OwnerController(ownerMapper, createOwner, getOwner, getOwnerList, getOwnerTransactions, getOwnerFiatTransactions, exchangeFiat);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
         ownerId = UUID.randomUUID();
     }
@@ -60,30 +61,16 @@ class OwnerControllerTest {
     @Test
     void createOwner_ReturnsCreated() throws Exception {
         CreateOwnerRequest req = new CreateOwnerRequest("John", "john@example.com", OwnerType.NATURAL);
-        when(createOwner.create(anyString(), anyString(), any())).thenReturn(
-                Owner.builder().id(ownerId).build());
+        when(createOwner.create(anyString(), anyString(), any())).thenReturn(Owner.builder().id(ownerId).build());
 
-        mockMvc.perform(post("/api/owners")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"John\",\"email\":\"john@example.com\",\"ownerType\":\"NATURAL\"}"))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(ownerId.toString()));
+        mockMvc.perform(post("/api/owners").contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"John\",\"email\":\"john@example.com\",\"ownerType\":\"NATURAL\"}")).andExpect(status().isCreated()).andExpect(jsonPath("$.id").value(ownerId.toString()));
     }
 
     @Test
     void getBalances_ReturnsBalances() throws Exception {
-        when(getOwner.get(ownerId)).thenReturn(
-                Owner.builder().id(ownerId)
-                        .wallet(Wallet.builder()
-                                .fiatBalance(BigDecimal.valueOf(50))
-                                .cryptoBalance(BigDecimal.valueOf(1))
-                                .build())
-                        .build());
+        when(getOwner.get(ownerId)).thenReturn(Owner.builder().id(ownerId).wallet(Wallet.builder().fiatBalance(BigDecimal.valueOf(50)).cryptoBalance(BigDecimal.valueOf(1)).build()).build());
 
-        mockMvc.perform(get("/api/owners/" + ownerId + "/balances"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.fiatBalance").value(50))
-                .andExpect(jsonPath("$.cryptoBalance").value(1));
+        mockMvc.perform(get("/api/owners/" + ownerId + "/balances")).andExpect(status().isOk()).andExpect(jsonPath("$.fiatBalance").value(50)).andExpect(jsonPath("$.cryptoBalance").value(1));
     }
 
     @Test
@@ -94,13 +81,7 @@ class OwnerControllerTest {
         when(getOwnerTransactions.get(any(), anyInt(), anyInt(), any())).thenReturn(page);
         when(ownerMapper.toTransactionDtos(anyList())).thenReturn(List.of(new TransactionDto()));
 
-        mockMvc.perform(get("/api/owners/" + ownerId + "/transactions")
-                        .param("page", "0").param("size", "1").param("direction", "ASC"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.transactions").isArray())
-                .andExpect(jsonPath("$.totalElements").value(1))
-                .andExpect(jsonPath("$.page").value(0))
-                .andExpect(jsonPath("$.size").value(1));
+        mockMvc.perform(get("/api/owners/" + ownerId + "/transactions").param("page", "0").param("size", "1").param("direction", "ASC")).andExpect(status().isOk()).andExpect(jsonPath("$.transactions").isArray()).andExpect(jsonPath("$.totalElements").value(1)).andExpect(jsonPath("$.page").value(0)).andExpect(jsonPath("$.size").value(1));
     }
 
     @Test
@@ -111,11 +92,7 @@ class OwnerControllerTest {
         when(getOwnerFiatTransactions.get(any(), anyInt(), anyInt(), any())).thenReturn(page);
         when(ownerMapper.toFiatTransactionDtos(anyList())).thenReturn(List.of(new FiatTransactionDto()));
 
-        mockMvc.perform(get("/api/owners/" + ownerId + "/transactions/fiat")
-                        .param("page", "0").param("size", "1").param("direction", "DESC"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.transactions").isArray())
-                .andExpect(jsonPath("$.totalElements").value(1));
+        mockMvc.perform(get("/api/owners/" + ownerId + "/transactions/fiat").param("page", "0").param("size", "1").param("direction", "DESC")).andExpect(status().isOk()).andExpect(jsonPath("$.transactions").isArray()).andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test
@@ -124,10 +101,6 @@ class OwnerControllerTest {
         when(getOwner.get(ownerId)).thenReturn(Owner.builder().id(ownerId).build());
         when(exchangeFiat.exchange(any(), any(), any())).thenReturn(BigDecimal.TEN);
 
-        mockMvc.perform(post("/api/owners/" + ownerId + "/fiat")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"amount\":10,\"operation\":\"INFLOW\"}"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("10"));
+        mockMvc.perform(post("/api/owners/" + ownerId + "/fiat").contentType(MediaType.APPLICATION_JSON).content("{\"amount\":10,\"operation\":\"INFLOW\"}")).andExpect(status().isOk()).andExpect(content().string("10"));
     }
 }

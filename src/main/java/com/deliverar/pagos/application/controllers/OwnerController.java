@@ -6,13 +6,6 @@ import com.deliverar.pagos.domain.entities.FiatTransaction;
 import com.deliverar.pagos.domain.entities.Owner;
 import com.deliverar.pagos.domain.entities.Transaction;
 import com.deliverar.pagos.domain.usecases.owner.*;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,10 +16,11 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import static org.springframework.data.domain.Sort.by;
+
 /**
  * Owner controller.
  */
-@Tag(name = "Propietarios", description = "Operaciones relacionadas con propietarios, balances y transacciones")
 @RequestMapping("/api/owners")
 @RestController
 @RequiredArgsConstructor
@@ -35,19 +29,31 @@ public class OwnerController {
     private final OwnerMapper ownerMapper;
     private final CreateOwner createOwner;
     private final GetOwner getOwner;
+    private final GetOwnerList getOwnerList;
     private final GetOwnerTransactions getOwnerTransactions;
     private final GetOwnerFiatTransactions getOwnerFiatTransactions;
     private final ExchangeFiat exchangeFiat;
 
-    @Operation(summary = "Crear nuevo propietario",
-            description = "Crea un nuevo propietario en el sistema con su nombre, email y tipo")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Propietario creado exitosamente",
-                content = @Content(mediaType = "application/json",
-                        schema = @Schema(implementation = CreateOwnerResponse.class))),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos en la solicitud",
-                content = @Content)
-    })
+
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public GetOwnersResponse getOwners(@RequestParam(name = "page", required = false, defaultValue = "0") int pageNumber,
+                                       @RequestParam(name = "size", required = false, defaultValue = "10") int size,
+                                       @RequestParam(name = "fieldBy", required = false, defaultValue = "email") String fieldBy,
+                                       @RequestParam(name = "direction", required = false, defaultValue = "ASC") Sort.Direction sortDirection) {
+        log.info("Get owners");
+
+        Page<Owner> page = getOwnerList.get(pageNumber, size, by(sortDirection, fieldBy));
+        return GetOwnersResponse.builder()
+                .ownersList(ownerMapper.toOwnerDtos(page.getContent()))
+                .totalElements(page.getNumberOfElements())
+                .page(pageNumber)
+                .size(size)
+                .hasNext(page.hasNext())
+                .sortDirection(sortDirection.name())
+                .build();
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CreateOwnerResponse createOAuthState(@RequestBody CreateOwnerRequest request) {
@@ -56,20 +62,9 @@ public class OwnerController {
         return CreateOwnerResponse.builder().id(owner.getId()).build();
     }
 
-    @Operation(summary = "Obtener balances",
-            description = "Obtiene los balances de fiat y crypto de un propietario específico")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Balances recuperados exitosamente",
-                content = @Content(mediaType = "application/json",
-                        schema = @Schema(implementation = GetBalancesResponse.class))),
-        @ApiResponse(responseCode = "404", description = "Propietario no encontrado",
-                content = @Content)
-    })
     @GetMapping("/{id}/balances")
     @ResponseStatus(HttpStatus.OK)
-    public GetBalancesResponse getBalances(
-            @Parameter(description = "ID del propietario", required = true)
-            @PathVariable UUID id) {
+    public GetBalancesResponse getBalances(@PathVariable UUID id) {
         log.info("Get balances for owner {}", id);
         Owner owner = getOwner.get(id);
         return GetBalancesResponse.builder()
@@ -120,25 +115,10 @@ public class OwnerController {
                 .build();
     }
 
-    @Operation(summary = "Realizar operación fiat",
-            description = "Realiza una operación de depósito o retiro de moneda fiat para un propietario específico")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Operación realizada exitosamente",
-                content = @Content(mediaType = "application/json",
-                        schema = @Schema(type = "number", format = "decimal",
-                                description = "Nuevo balance después de la operación"))),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos o fondos insuficientes",
-                content = @Content),
-        @ApiResponse(responseCode = "404", description = "Propietario no encontrado",
-                content = @Content)
-    })
     @PostMapping("/{id}/fiat")
     @ResponseStatus(HttpStatus.OK)
-    public BigDecimal exchangeOwnerFiat(
-            @Parameter(description = "ID del propietario", required = true)
-            @PathVariable UUID id,
-            @Parameter(description = "Detalles de la operación fiat (monto y tipo de operación)", required = true)
-            @RequestBody FiatExchangeRequest request) {
+    public BigDecimal exchangeOwnerFiat(@PathVariable UUID id,
+                                        @RequestBody FiatExchangeRequest request) {
         log.info("Exchange ownerId {} with amount {} and operation {}", id, request.getAmount(), request.getOperation());
         Owner owner = getOwner.get(id);
         return exchangeFiat.exchange(owner, request.getAmount(), request.getOperation());
