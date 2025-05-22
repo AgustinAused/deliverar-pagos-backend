@@ -82,7 +82,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // AuthController
-                        .requestMatchers("/api/auth/login", "/api/auth/refresh")
+                        .requestMatchers("/api/auth/**")
                         .permitAll()
 
 
