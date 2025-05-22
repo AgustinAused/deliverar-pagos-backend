@@ -4,8 +4,9 @@ import com.deliverar.pagos.adapters.crypto.service.DeliverCoinService;
 import com.deliverar.pagos.domain.dtos.MintBurnRequest;
 import com.deliverar.pagos.domain.dtos.TransactionResponse;
 import com.deliverar.pagos.domain.dtos.TransferRequest;
+import com.deliverar.pagos.domain.dtos.BuyCryptoRequest;
 import com.deliverar.pagos.domain.entities.Transaction;
-import com.deliverar.pagos.adapters.crypto.service.DeliverCoinService;
+import com.deliverar.pagos.domain.exceptions.BadRequestException;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -169,6 +170,31 @@ public class DeliverCoinController {
         try {
             BigDecimal supply = deliverCoinService.totalSupply();
             return ResponseEntity.ok(Map.of("totalSupply", supply));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @Operation(summary = "Comprar crypto con fiat",
+            description = "Permite a un usuario comprar tokens DeliverCoin usando su balance en fiat")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "202", description = "Compra iniciada correctamente",
+                content = @Content(mediaType = "application/json",
+                schema = @Schema(example = "{\"status\": \"pending\", \"trackingId\": \"uuid\", \"message\": \"Compra iniciada y en proceso\"}"))),
+        @ApiResponse(responseCode = "400", description = "Balance insuficiente o datos inválidos",
+                content = @Content)
+    })
+    @PostMapping("/buy")
+    public ResponseEntity<Map<String, Object>> buyCrypto(@RequestBody BuyCryptoRequest request) {
+        try {
+            UUID trackingId = deliverCoinService.buyCryptoWithFiat(request.getEmail(), request.getAmount());
+            return ResponseEntity.accepted().body(Map.of(
+                    "status", "pending",
+                    "trackingId", trackingId,
+                    "message", "Compra iniciada y en proceso"
+            ));
+        } catch (BadRequestException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
