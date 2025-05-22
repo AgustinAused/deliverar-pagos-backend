@@ -56,10 +56,18 @@ public class OwnerController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CreateOwnerResponse createOAuthState(@RequestBody CreateOwnerRequest request) {
+    public CreateOwnerResponse create(@RequestBody CreateOwnerRequest request) {
         log.info("Create owner request: {}", request);
         Owner owner = createOwner.create(request.getName(), request.getEmail().toLowerCase(), request.getOwnerType());
         return CreateOwnerResponse.builder().id(owner.getId()).build();
+    }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public OwnerDto get(@PathVariable UUID id) {
+        log.info("Get owner with {}", id);
+        Owner owner = getOwner.get(id);
+        return ownerMapper.toOwnerDto(owner);
     }
 
     @GetMapping("/{id}/balances")
