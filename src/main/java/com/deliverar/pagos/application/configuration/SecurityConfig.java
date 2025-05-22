@@ -58,7 +58,7 @@ public class SecurityConfig {
 //        cfg.setAllowedMethods(List.of(""));        // Permite cualquier método
 //        cfg.setAllowedHeaders(List.of("*"));        // Permite cualquier header
 //        cfg.setAllowCredentials(true);
-        cfg.apllyedPermitDefaultValues();
+        cfg.applyPermitDefaultValues();
         UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
         src.registerCorsConfiguration("/**", cfg);
         return src;
