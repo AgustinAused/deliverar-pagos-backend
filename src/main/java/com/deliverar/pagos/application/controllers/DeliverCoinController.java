@@ -63,13 +63,20 @@ public class DeliverCoinController {
     })
     @PostMapping("/transfer")
     public ResponseEntity<Map<String, Object>> transfer(@RequestBody TransferRequest request) {
-        UUID trackingId = deliverCoinService.asyncTransfer(request);
 
-        return ResponseEntity.accepted().body(Map.of(
-                "status", "pending",
-                "trackingId", trackingId,
-                "message", "Transferencia iniciada y en proceso"
-        ));
+       try {
+           UUID trackingId = deliverCoinService.asyncTransfer(request);
+
+           return ResponseEntity.accepted().body(Map.of(
+                   "status", "pending",
+                   "trackingId", trackingId,
+                   "message", "Transferencia iniciada y en proceso"
+           ));
+       }catch (BadRequestException e) {
+              return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+         } catch (Exception e) {
+              return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+       }
     }
 
     @Operation(summary = "Consultar estado de transferencia",
@@ -195,6 +202,25 @@ public class DeliverCoinController {
             ));
         } catch (BadRequestException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @Operation(summary = "Sincronizar balance del owner",
+            description = "Sincroniza el balance del owner en la base de datos con el de la blockchain")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Sincronización exitosa",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(example = "{\"message\": \"Balance sincronizado\"}"))),
+            @ApiResponse(responseCode = "500", description = "Error durante la sincronización",
+                    content = @Content)
+    })
+    @PostMapping("/sync-balance")
+    public ResponseEntity<Map<String, String>> syncOwnerBalance(@RequestParam String email) {
+        try {
+            deliverCoinService.syncBalance(email);
+            return ResponseEntity.ok(Map.of("message", "Balance sincronizado"));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
