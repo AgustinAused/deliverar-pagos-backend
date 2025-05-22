@@ -3,6 +3,7 @@ package com.deliverar.pagos.application.controllers;
 import com.deliverar.pagos.application.mappers.OwnerMapper;
 import com.deliverar.pagos.domain.dtos.TransactionDto;
 import com.deliverar.pagos.domain.entities.Transaction;
+import com.deliverar.pagos.domain.usecases.user.GetFiatTransactions;
 import com.deliverar.pagos.domain.usecases.user.GetTransactions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,23 +20,29 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.List;
 import java.util.UUID;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class TransactionHistoryControllerTest {
 
     private MockMvc mockMvc;
 
-    @Mock private OwnerMapper ownerMapper;
-    @Mock private GetTransactions getTransactions;
+    @Mock
+    private OwnerMapper ownerMapper;
+    @Mock
+    private GetTransactions getTransactions;
+    @Mock
+    private GetFiatTransactions getFiatTransactions;
 
     private TransactionHistoryController controller;
 
     @BeforeEach
     void setUp() {
-        controller = new TransactionHistoryController(ownerMapper, getTransactions);
+        controller = new TransactionHistoryController(ownerMapper, getTransactions, getFiatTransactions);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 
