@@ -39,12 +39,24 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration cfg = new CorsConfiguration();
+//        cfg.setAllowedOrigins(List.of("https://front.blockchain.deliver.ar/", "http://localhost:3000"));
+//        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+//        cfg.setAllowedHeaders(List.of("*"));
+//        cfg.setAllowCredentials(true);
+//        UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
+//        src.registerCorsConfiguration("/**", cfg);
+//        return src;
+//    }
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(List.of("https://front.blockchain.deliver.ar/", "http://localhost:3000"));
-        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        cfg.setAllowedHeaders(List.of("*"));
+        cfg.setAllowedOriginPatterns(List.of("")); // Permite cualquier origen
+        cfg.setAllowedMethods(List.of(""));        // Permite cualquier método
+        cfg.setAllowedHeaders(List.of("*"));        // Permite cualquier header
         cfg.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
         src.registerCorsConfiguration("/**", cfg);
