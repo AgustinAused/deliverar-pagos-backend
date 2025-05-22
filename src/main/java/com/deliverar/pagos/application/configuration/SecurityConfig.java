@@ -54,7 +54,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOriginPatterns(List.of("aaafront.blockchain.deliver.ar")); // Permite cualquier origen
+        cfg.setAllowedOriginPatterns(List.of("front.blockchain.deliver.ar")); // Permite cualquier origen
         cfg.setAllowedMethods(List.of(""));        // Permite cualquier método
         cfg.setAllowedHeaders(List.of("*"));        // Permite cualquier header
         cfg.setAllowCredentials(true);
