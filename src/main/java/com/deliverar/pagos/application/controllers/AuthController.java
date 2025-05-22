@@ -68,12 +68,15 @@ public class AuthController {
         User user = userRepository.findByEmailIgnoreCase(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
+        log.error("User: {}", user);
         String accessToken = jwtUtil.generateAccessToken(
                 username,
                 user.getId().toString(),
                 user.getRole().name()
         );
         String refreshToken = jwtUtil.generateRefreshToken(username);
+
+        log.error("Access Token: {}", accessToken);
 
         return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken, expiresIn, user.getRole(), user.getRole().getPermissions()));
     }
