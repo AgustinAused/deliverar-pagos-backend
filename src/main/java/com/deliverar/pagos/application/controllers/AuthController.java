@@ -24,10 +24,12 @@ import java.util.Map;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.extern.slf4j.Slf4j;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @Tag(name = "Autenticación", description = "Operaciones de autenticación y tokens JWT")
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
