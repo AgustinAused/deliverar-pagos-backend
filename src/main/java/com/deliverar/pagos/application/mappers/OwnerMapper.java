@@ -23,6 +23,10 @@ public class OwnerMapper {
                 .build();
     }
 
+    public List<OwnerDto> toOwnerDtos(List<Owner> entities) {
+        return entities.stream().map(this::toOwnerDto).collect(Collectors.toList());
+    }
+
     public TransactionDto toTransactionDto(Transaction entity) {
         return TransactionDto.builder()
                 .id(entity.getId())
