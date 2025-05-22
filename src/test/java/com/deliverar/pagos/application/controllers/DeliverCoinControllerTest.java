@@ -4,9 +4,11 @@ import com.deliverar.pagos.adapters.crypto.service.DeliverCoinService;
 import com.deliverar.pagos.domain.dtos.MintBurnRequest;
 import com.deliverar.pagos.domain.dtos.TransactionResponse;
 import com.deliverar.pagos.domain.dtos.TransferRequest;
+import com.deliverar.pagos.domain.dtos.BuyCryptoRequest;
 import com.deliverar.pagos.domain.entities.Owner;
 import com.deliverar.pagos.domain.entities.Transaction;
 import com.deliverar.pagos.domain.entities.TransactionStatus;
+import com.deliverar.pagos.domain.exceptions.BadRequestException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -201,5 +203,64 @@ class DeliverCoinControllerTest {
         assertEquals(500, response.getStatusCode().value());
         Map<?, ?> body = (Map<?, ?>) response.getBody();
         assertEquals("supply error", body.get("error"));
+    }
+
+    @Test
+    void buyCrypto_ShouldReturnAcceptedAndPendingStatus() throws Exception {
+        // Arrange
+        BuyCryptoRequest req = new BuyCryptoRequest();
+        req.setEmail("buyer@example.com");
+        req.setAmount(BigDecimal.valueOf(100));
+        when(deliverCoinService.buyCryptoWithFiat(req.getEmail(), req.getAmount())).thenReturn(trackingId);
+
+        // Act
+        ResponseEntity<Map<String, Object>> response = controller.buyCrypto(req);
+
+        // Assert
+        assertEquals(202, response.getStatusCode().value(), "Should return HTTP 202 Accepted");
+        Map<String, Object> body = response.getBody();
+        assertNotNull(body, "Response body should not be null");
+        assertEquals("pending", body.get("status"));
+        assertEquals(trackingId, body.get("trackingId"));
+        assertEquals("Compra iniciada y en proceso", body.get("message"));
+        verify(deliverCoinService, times(1)).buyCryptoWithFiat(req.getEmail(), req.getAmount());
+    }
+
+    @Test
+    void buyCrypto_ShouldReturnBadRequestWhenInsufficientBalance() throws Exception {
+        // Arrange
+        BuyCryptoRequest req = new BuyCryptoRequest();
+        req.setEmail("poor@example.com");
+        req.setAmount(BigDecimal.valueOf(1000));
+        when(deliverCoinService.buyCryptoWithFiat(req.getEmail(), req.getAmount()))
+            .thenThrow(new BadRequestException("Insufficient fiat balance"));
+
+        // Act
+        ResponseEntity<Map<String, Object>> response = controller.buyCrypto(req);
+
+        // Assert
+        assertEquals(400, response.getStatusCode().value(), "Should return HTTP 400 Bad Request");
+        Map<String, Object> body = response.getBody();
+        assertNotNull(body, "Response body should not be null");
+        assertEquals("Insufficient fiat balance", body.get("error"));
+    }
+
+    @Test
+    void buyCrypto_ShouldReturnErrorWhenServiceFails() throws Exception {
+        // Arrange
+        BuyCryptoRequest req = new BuyCryptoRequest();
+        req.setEmail("error@example.com");
+        req.setAmount(BigDecimal.valueOf(50));
+        when(deliverCoinService.buyCryptoWithFiat(req.getEmail(), req.getAmount()))
+            .thenThrow(new RuntimeException("Service error"));
+
+        // Act
+        ResponseEntity<Map<String, Object>> response = controller.buyCrypto(req);
+
+        // Assert
+        assertEquals(500, response.getStatusCode().value(), "Should return HTTP 500 Internal Server Error");
+        Map<String, Object> body = response.getBody();
+        assertNotNull(body, "Response body should not be null");
+        assertEquals("Service error", body.get("error"));
     }
 }

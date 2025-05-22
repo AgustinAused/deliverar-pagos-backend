@@ -6,7 +6,9 @@ import com.deliverar.pagos.domain.entities.*;
 import com.deliverar.pagos.domain.exceptions.BadRequestException;
 import com.deliverar.pagos.domain.repositories.OwnerRepository;
 import com.deliverar.pagos.domain.repositories.TransactionRepository;
+import com.deliverar.pagos.domain.repositories.UserRepository;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
@@ -26,6 +28,7 @@ import static com.deliverar.pagos.adapters.crypto.service.AmountConverter.toInte
 
 
 @Service
+@RequiredArgsConstructor
 public class DeliverCoinService {
 
     @Value("${wallet.private.key}")
@@ -40,11 +43,9 @@ public class DeliverCoinService {
     private DeliverCoin deliverCoin;
     private final TransactionRepository transactionRepository;
     private final OwnerRepository ownerRepository;
-
-    public DeliverCoinService(TransactionRepository transactionRepository, OwnerRepository ownerRepository) {
-        this.transactionRepository = transactionRepository;
-        this.ownerRepository = ownerRepository;
-    }
+    private final UserRepository userRepository;
+    @Value("${app.bootstrap.owner.email}")
+    private String ownerEmail;
 
     @PostConstruct
     public void init() {
@@ -104,14 +105,74 @@ public class DeliverCoinService {
         return tx.getId();
     }
 
+    public UUID buyCryptoWithFiat(String email, BigDecimal cryptoAmount) throws Exception {
+        Owner buyer = getOwnerByEmail(email);
+        Owner ownerAdmin = getOwnerByEmail(ownerEmail);
+        // 1 crypto = 1 fiat
+
+        // Verify balance de fiat del comprador
+        if (buyer.getWallet().getFiatBalance().compareTo(cryptoAmount) < 0) {
+            throw new BadRequestException("Insufficient fiat balance");
+        }
+
+        // Verify balance de crypto del owner
+        if (balanceOf(ownerEmail).compareTo(cryptoAmount) < 0) {
+            throw new BadRequestException("Insufficient crypto balance in owner wallet");
+        }
+
+        // Subtract fiat from buyer wallet's
+        buyer.getWallet().setFiatBalance(buyer.getWallet().getFiatBalance().subtract(cryptoAmount));
+
+        // Transfer crypto from owner to buyer
+        ownerAdmin.getWallet().setCryptoBalance(ownerAdmin.getWallet().getCryptoBalance().subtract(cryptoAmount));
+        buyer.getWallet().setCryptoBalance(buyer.getWallet().getCryptoBalance().add(cryptoAmount));
+
+        // Create transaction records
+        Transaction tx = new Transaction();
+        tx.setId(UUID.randomUUID());
+        tx.setOriginOwner(ownerAdmin);
+        tx.setDestinationOwner(buyer);
+        tx.setAmount(cryptoAmount);
+        tx.setCurrency(CurrencyType.CRYPTO);
+        tx.setConversionRate(BigDecimal.ONE);
+        tx.setConcept("BUY_CRYPTO");
+        tx.setStatus(TransactionStatus.PENDING);
+        tx.setTransactionDate(Instant.now());
+        tx.setCreatedAt(Instant.now());
+
+        transactionRepository.save(tx);
+
+        CompletableFuture.runAsync(() -> {
+            try {
+                TransactionReceipt receipt = deliverCoin.transfer(ownerEmail, email, toInteger(cryptoAmount)).send();
+                tx.setStatus(TransactionStatus.SUCCESS);
+                tx.setBlockchainTxHash(receipt.getTransactionHash());
+                transactionRepository.save(tx);
+                ownerRepository.save(ownerAdmin);
+                ownerRepository.save(buyer);
+            } catch (Exception e) {
+                tx.setStatus(TransactionStatus.FAILURE);
+                transactionRepository.save(tx);
+                // Revert changes in case of failure
+                buyer.getWallet().setFiatBalance(buyer.getWallet().getFiatBalance().add(cryptoAmount));
+                buyer.getWallet().setCryptoBalance(buyer.getWallet().getCryptoBalance().subtract(cryptoAmount));
+                ownerAdmin.getWallet().setCryptoBalance(ownerAdmin.getWallet().getCryptoBalance().add(cryptoAmount));
+                ownerRepository.save(ownerAdmin);
+                ownerRepository.save(buyer);
+            }
+        });
+
+        return tx.getId();
+    }
+
     public Owner getOwnerByEmail(String email) {
         return ownerRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Owner no encontrado: " + email));
+                .orElseThrow(() -> new IllegalArgumentException("Owner not found: " + email));
     }
 
     public String getEmailByOwnerId(UUID id) {
         return ownerRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Owner no encontrado: " + id))
+                .orElseThrow(() -> new IllegalArgumentException("Owner not found: " + id))
                 .getEmail();
     }
 
