@@ -96,12 +96,11 @@ class DeliverCoinControllerTest {
     @Test
     void mint_ShouldReturnSuccessWhenNoException() throws Exception {
         MintBurnRequest req = MintBurnRequest.builder()
-                .email("user@example.com")
                 .amount(BigDecimal.valueOf(100.00))
                 .build();
         TransactionReceipt receipt = mock(TransactionReceipt.class);
         when(receipt.getTransactionHash()).thenReturn("0xdef456");
-        when(deliverCoinService.mint(BigDecimal.valueOf(100.00), "user@example.com")).thenReturn(receipt);
+        when(deliverCoinService.mint(BigDecimal.valueOf(100.00))).thenReturn(receipt);
 
         ResponseEntity<?> response = controller.mint(req);
 
@@ -109,15 +108,14 @@ class DeliverCoinControllerTest {
         Map<?, ?> body = (Map<?, ?>) response.getBody();
         assertEquals("success", body.get("status"));
         assertEquals("0xdef456", body.get("transactionHash"));
-        verify(deliverCoinService).mint(BigDecimal.valueOf(100.00), "user@example.com");
+        verify(deliverCoinService).mint(BigDecimal.valueOf(100.00));
     }
 
     @Test
     void mint_ShouldReturnErrorWhenExceptionThrown() throws Exception {
         MintBurnRequest req = mock(MintBurnRequest.class);
         when(req.getAmount()).thenReturn(BigDecimal.valueOf(50));
-        when(req.getEmail()).thenReturn("user2@example.com");
-        when(deliverCoinService.mint(any(), any())).thenThrow(new RuntimeException("mint failed"));
+        when(deliverCoinService.mint(any())).thenThrow(new RuntimeException("mint failed"));
 
         ResponseEntity<?> response = controller.mint(req);
 
@@ -130,10 +128,9 @@ class DeliverCoinControllerTest {
     void burn_ShouldReturnSuccessWhenNoException() throws Exception {
         MintBurnRequest req = mock(MintBurnRequest.class);
         when(req.getAmount()).thenReturn(BigDecimal.valueOf(200));
-        when(req.getEmail()).thenReturn("user3@example.com");
         TransactionReceipt receipt = mock(TransactionReceipt.class);
         when(receipt.getTransactionHash()).thenReturn("0xghi789");
-        when(deliverCoinService.burn(BigDecimal.valueOf(200), "user3@example.com")).thenReturn(receipt);
+        when(deliverCoinService.burn(BigDecimal.valueOf(200))).thenReturn(receipt);
 
         ResponseEntity<?> response = controller.burn(req);
 
@@ -141,15 +138,14 @@ class DeliverCoinControllerTest {
         Map<?, ?> body = (Map<?, ?>) response.getBody();
         assertEquals("success", body.get("status"));
         assertEquals("0xghi789", body.get("transactionHash"));
-        verify(deliverCoinService).burn(BigDecimal.valueOf(200), "user3@example.com");
+        verify(deliverCoinService).burn(BigDecimal.valueOf(200));
     }
 
     @Test
     void burn_ShouldReturnErrorWhenExceptionThrown() throws Exception {
         MintBurnRequest req = mock(MintBurnRequest.class);
         when(req.getAmount()).thenReturn(BigDecimal.valueOf(300));
-        when(req.getEmail()).thenReturn("user4@example.com");
-        when(deliverCoinService.burn(any(), any())).thenThrow(new RuntimeException("burn failed"));
+        when(deliverCoinService.burn(any())).thenThrow(new RuntimeException("burn failed"));
 
         ResponseEntity<?> response = controller.burn(req);
 

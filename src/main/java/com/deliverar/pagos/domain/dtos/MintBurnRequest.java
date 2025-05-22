@@ -12,6 +12,5 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MintBurnRequest {
-    private String email;
     private BigDecimal amount;
 }

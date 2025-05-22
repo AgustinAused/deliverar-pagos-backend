@@ -180,19 +180,19 @@ public class DeliverCoinService {
         return transactionRepository.findById(trackingId).orElseThrow();
     }
 
-    public TransactionReceipt mint(BigDecimal amount, String toEmail) throws Exception {
-        Owner toOwner = getOwnerByEmail(toEmail);
-        toOwner.getWallet().setCryptoBalance(toOwner.getWallet().getCryptoBalance().add(amount));
-        ownerRepository.save(toOwner);
-        return deliverCoin.mint(toInteger(amount), toEmail).send();
+    public TransactionReceipt mint(BigDecimal amount) throws Exception {
+        Owner ownerAdmin = getOwnerByEmail(ownerEmail);
+        ownerAdmin.getWallet().setCryptoBalance(ownerAdmin.getWallet().getCryptoBalance().add(amount));
+        ownerRepository.save(ownerAdmin);
+        return deliverCoin.mint(toInteger(amount), ownerEmail).send();
     }
 
-    public TransactionReceipt burn(BigDecimal amount, String fromEmail) throws Exception {
-        Owner fromOwner = getOwnerByEmail(fromEmail);
-        fromOwner.getWallet().setCryptoBalance(fromOwner.getWallet().getCryptoBalance().subtract(amount));
-        ownerRepository.save(fromOwner);
+    public TransactionReceipt burn(BigDecimal amount) throws Exception {
+        Owner ownerAdmin = getOwnerByEmail(ownerEmail);
+        ownerAdmin.getWallet().setCryptoBalance(ownerAdmin.getWallet().getCryptoBalance().subtract(amount));
+        ownerRepository.save(ownerAdmin);
 
-        return deliverCoin.burn(toInteger(amount), fromEmail).send();
+        return deliverCoin.burn(toInteger(amount), ownerEmail).send();
     }
 
     public BigDecimal balanceOf(String email) throws Exception {
