@@ -54,7 +54,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOriginPatterns(List.of("front.blockchain.deliver.ar")); // Permite cualquier origen
+        cfg.setAllowedOriginPatterns(List.of("*")); // Permite cualquier origen
         cfg.setAllowedMethods(List.of(""));        // Permite cualquier método
         cfg.setAllowedHeaders(List.of("*"));        // Permite cualquier header
         cfg.setAllowCredentials(true);
@@ -83,6 +83,7 @@ public class SecurityConfig {
                         // AuthController
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/refresh")
                         .permitAll()
+
 
                         // Swagger/OpenAPI
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
