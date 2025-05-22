@@ -5,8 +5,14 @@ import com.deliverar.pagos.domain.dtos.AuthResponse;
 import com.deliverar.pagos.domain.entities.User;
 import com.deliverar.pagos.domain.repositories.UserRepository;
 import com.deliverar.pagos.infrastructure.security.JwtUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,15 +27,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-
 @Tag(name = "Autenticación", description = "Operaciones de autenticación y tokens JWT")
 @RestController
 @RequestMapping("/api/auth")
+@Slf4j
 public class AuthController {
     private final AuthenticationManager authManager;
     private final JwtUtil jwtUtil;
@@ -51,16 +52,17 @@ public class AuthController {
     @Operation(summary = "Iniciar sesión",
             description = "Autentica un usuario usando email y contraseña, retorna tokens de acceso y refresco")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Autenticación exitosa",
-                content = { @Content(mediaType = "application/json",
-                        schema = @Schema(implementation = AuthResponse.class)) }),
-        @ApiResponse(responseCode = "401", description = "Credenciales inválidas",
-                content = @Content),
-        @ApiResponse(responseCode = "400", description = "Solicitud inválida",
-                content = @Content)
+            @ApiResponse(responseCode = "200", description = "Autenticación exitosa",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = AuthResponse.class))}),
+            @ApiResponse(responseCode = "401", description = "Credenciales inválidas",
+                    content = @Content),
+            @ApiResponse(responseCode = "400", description = "Solicitud inválida",
+                    content = @Content)
     })
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest req) {
+        log.info("Login request received for user: {}", req.getEmail());
         Authentication auth = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword())
         );
@@ -74,18 +76,18 @@ public class AuthController {
                 user.getRole().name()
         );
         String refreshToken = jwtUtil.generateRefreshToken(username);
-
+        log.info("Login successful for user: {}", req.getEmail());
         return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken, expiresIn, user.getRole(), user.getRole().getPermissions()));
     }
 
     @Operation(summary = "Refrescar token",
             description = "Genera un nuevo token de acceso usando un token de refresco válido")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Token refrescado exitosamente",
-                content = { @Content(mediaType = "application/json",
-                        schema = @Schema(implementation = Map.class)) }),
-        @ApiResponse(responseCode = "401", description = "Token de refresco inválido o expirado",
-                content = @Content)
+            @ApiResponse(responseCode = "200", description = "Token refrescado exitosamente",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Map.class))}),
+            @ApiResponse(responseCode = "401", description = "Token de refresco inválido o expirado",
+                    content = @Content)
     })
     @PostMapping("/refresh")
     public ResponseEntity<Map<String, Object>> refresh(
