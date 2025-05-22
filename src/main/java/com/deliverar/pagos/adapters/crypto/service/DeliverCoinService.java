@@ -96,6 +96,11 @@ public class DeliverCoinService {
                 transactionRepository.save(tx);
                 ownerRepository.save(fromOwner);
                 ownerRepository.save(toOwner);
+
+                // <<< SINCRONIZAR DESPUÉS DE TRANSFERENCIA EXITOSA
+                syncBalance(request.getFromEmail());
+                syncBalance(request.getToEmail());
+
             } catch (Exception e) {
                 tx.setStatus(TransactionStatus.FAILURE);
                 transactionRepository.save(tx);
@@ -150,6 +155,11 @@ public class DeliverCoinService {
                 transactionRepository.save(tx);
                 ownerRepository.save(ownerAdmin);
                 ownerRepository.save(buyer);
+
+                // <<< SINCRONIZAR DESPUÉS DE COMPRA EXITOSA
+                syncBalance(email);
+                syncBalance(ownerEmail);
+
             } catch (Exception e) {
                 tx.setStatus(TransactionStatus.FAILURE);
                 transactionRepository.save(tx);
@@ -161,7 +171,6 @@ public class DeliverCoinService {
                 ownerRepository.save(buyer);
             }
         });
-
         return tx.getId();
     }
 
@@ -209,5 +218,16 @@ public class DeliverCoinService {
                 .totalOfOwners(ownerRepository.count())
                 .totalOfCryptos(totalSupply())
                 .build();
+    }
+
+    public void syncBalance(String email) throws Exception {
+        Owner owner = getOwnerByEmail(email);
+        BigDecimal blockchainBalance = balanceOf(email);
+        BigDecimal databaseBalance = owner.getWallet().getCryptoBalance();
+
+        if (!blockchainBalance.equals(databaseBalance)) {
+            owner.getWallet().setCryptoBalance(blockchainBalance);
+            ownerRepository.save(owner);
+        }
     }
 }
