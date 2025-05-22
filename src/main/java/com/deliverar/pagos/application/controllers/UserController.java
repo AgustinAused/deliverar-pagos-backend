@@ -7,6 +7,7 @@ import com.deliverar.pagos.domain.dtos.CreateUserResponse;
 import com.deliverar.pagos.domain.dtos.UserDto;
 import com.deliverar.pagos.domain.entities.User;
 import com.deliverar.pagos.domain.usecases.user.CreateUser;
+import com.deliverar.pagos.domain.usecases.user.DeleteUser;
 import com.deliverar.pagos.domain.usecases.user.GetUser;
 import com.deliverar.pagos.domain.usecases.user.GetUserList;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
     private final GetUser getUser;
     private final GetUserList getUserList;
+    private final DeleteUser deleteUser;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -47,5 +49,11 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public UserDto get(@PathVariable UUID id) {
         return userMapper.toDto(getUser.get(id));
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable UUID id) {
+        deleteUser.delete(id);
     }
 }
