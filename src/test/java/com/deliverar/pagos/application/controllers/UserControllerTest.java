@@ -5,6 +5,7 @@ import com.deliverar.pagos.domain.dtos.UserDto;
 import com.deliverar.pagos.domain.entities.Role;
 import com.deliverar.pagos.domain.entities.User;
 import com.deliverar.pagos.domain.usecases.user.CreateUser;
+import com.deliverar.pagos.domain.usecases.user.DeleteUser;
 import com.deliverar.pagos.domain.usecases.user.GetUser;
 import com.deliverar.pagos.domain.usecases.user.GetUserList;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,6 +44,8 @@ class UserControllerTest {
     private GetUser getUser;
     @Mock
     private GetUserList getUserList;
+    @Mock
+    private DeleteUser deleteUser;
 
     private UserController controller;
     private UUID userId;
@@ -50,7 +53,7 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        controller = new UserController(userMapper, createUser, passwordEncoder, getUser, getUserList);
+        controller = new UserController(userMapper, createUser, passwordEncoder, getUser, getUserList, deleteUser);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
         userId = UUID.randomUUID();
         now = Instant.now();
