@@ -39,13 +39,26 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration cfg = new CorsConfiguration();
+//        cfg.setAllowedOrigins(List.of("https://front.blockchain.deliver.ar/", "http://localhost:3000"));
+//        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+//        cfg.setAllowedHeaders(List.of("*"));
+//        cfg.setAllowCredentials(true);
+//        UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
+//        src.registerCorsConfiguration("/**", cfg);
+//        return src;
+//    }
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(List.of("https://front.blockchain.deliver.ar/", "http://localhost:3000"));
-        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        cfg.setAllowedHeaders(List.of("*"));
-        cfg.setAllowCredentials(true);
+        cfg.setAllowedOriginPatterns(List.of("*")); // Permite cualquier origen
+//        cfg.setAllowedMethods(List.of(""));        // Permite cualquier método
+//        cfg.setAllowedHeaders(List.of("*"));        // Permite cualquier header
+//        cfg.setAllowCredentials(true);
+        cfg.applyPermitDefaultValues();
         UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
         src.registerCorsConfiguration("/**", cfg);
         return src;
@@ -69,8 +82,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // AuthController
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/refresh")
+                        .requestMatchers("/api/auth/**")
                         .permitAll()
+
 
                         // Swagger/OpenAPI
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
@@ -114,7 +128,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/users/*")
                         .hasRole("ADMIN")
 
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 );
 
         return http.build();
