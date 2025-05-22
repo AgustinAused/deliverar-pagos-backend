@@ -39,17 +39,17 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-//    @Bean
-//    public CorsConfigurationSource corsConfigurationSource() {
-//        CorsConfiguration cfg = new CorsConfiguration();
-//        cfg.setAllowedOrigins(List.of("http://localhost:3000"));
-//        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-//        cfg.setAllowedHeaders(List.of("*"));
-//        cfg.setAllowCredentials(true);
-//        UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
-//        src.registerCorsConfiguration("/**", cfg);
-//        return src;
-//    }
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration cfg = new CorsConfiguration();
+        cfg.setAllowedOrigins(List.of("https://frontend.blockchain.deliver.ar", "http://localhost:3000"));
+        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        cfg.setAllowedHeaders(List.of("*"));
+        cfg.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
+        src.registerCorsConfiguration("/**", cfg);
+        return src;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
