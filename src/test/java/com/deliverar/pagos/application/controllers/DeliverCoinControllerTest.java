@@ -259,4 +259,32 @@ class DeliverCoinControllerTest {
         assertNotNull(body, "Response body should not be null");
         assertEquals("Service error", body.get("error"));
     }
+
+    @Test
+    void syncOwnerBalance_ShouldReturnSuccessMessage() throws Exception {
+        DeliverCoinService service = mock(DeliverCoinService.class);
+        DeliverCoinController controller = new DeliverCoinController(service);
+
+        String email = "owner@example.com";
+        ResponseEntity<Map<String, String>> response = controller.syncOwnerBalance(email);
+
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals("Balance sincronizado", response.getBody().get("message"));
+        verify(service).syncBalance(email);
+    }
+
+    @Test
+    void syncOwnerBalance_ShouldReturnErrorOnException() throws Exception {
+        DeliverCoinService service = mock(DeliverCoinService.class);
+        DeliverCoinController controller = new DeliverCoinController(service);
+
+        String email = "fail@example.com";
+        doThrow(new RuntimeException("sync error")).when(service).syncBalance(email);
+
+        ResponseEntity<Map<String, String>> response = controller.syncOwnerBalance(email);
+
+        assertEquals(500, response.getStatusCode().value());
+        assertEquals("sync error", response.getBody().get("error"));
+        verify(service).syncBalance(email);
+    }
 }

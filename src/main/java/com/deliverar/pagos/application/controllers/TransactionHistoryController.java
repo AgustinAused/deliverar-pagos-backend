@@ -21,9 +21,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * Transaction history controller.
- */
 @Tag(name = "Transacciones", description = "Operaciones relacionadas al historial de transacciones")
 @RequestMapping("/api/transactions")
 @RestController
@@ -70,14 +67,29 @@ public class TransactionHistoryController {
                 .build();
     }
 
-
+    @Operation(
+            summary = "Obtener historial de transacciones fiat",
+            description = "Devuelve una lista paginada de transacciones fiat según los filtros enviados por query params."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Transacciones fiat obtenidas exitosamente",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = GetFiatTransactionsResponse.class))
+            ),
+            @ApiResponse(responseCode = "400", description = "Parámetros inválidos", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/fiat")
     @ResponseStatus(HttpStatus.OK)
-    public GetFiatTransactionsResponse getFiatTransactions(@RequestParam(name = "page", required = false, defaultValue = "0") int pageNumber,
-                                                           @RequestParam(name = "size", required = false, defaultValue = "10") int size,
-                                                           @RequestParam(name = "direction", required = false, defaultValue = "DESC") Sort.Direction sortDirection
+    public GetFiatTransactionsResponse getFiatTransactions(
+            @Parameter(description = "Número de página (inicia en 0)", example = "0")
+            @RequestParam(name = "page", required = false, defaultValue = "0") int pageNumber,
+            @Parameter(description = "Tamaño de la página", example = "10")
+            @RequestParam(name = "size", required = false, defaultValue = "10") int size,
+            @Parameter(description = "Dirección de ordenamiento (ASC o DESC)", example = "DESC")
+            @RequestParam(name = "direction", required = false, defaultValue = "DESC") Sort.Direction sortDirection
     ) {
-
         Page<FiatTransaction> page = getFiatTransactions.get(pageNumber, size, sortDirection);
 
         return GetFiatTransactionsResponse.builder()
