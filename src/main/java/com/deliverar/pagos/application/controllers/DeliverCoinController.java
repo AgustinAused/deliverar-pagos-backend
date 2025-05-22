@@ -116,7 +116,7 @@ public class DeliverCoinController {
     @PostMapping("/mint")
     public ResponseEntity<Map<String,String>> mint(@RequestBody MintBurnRequest request) {
         try {
-            TransactionReceipt receipt = deliverCoinService.mint(request.getAmount(), request.getEmail());
+            TransactionReceipt receipt = deliverCoinService.mint(request.getAmount());
             return ResponseEntity.ok(Map.of("status", "success", "transactionHash", receipt.getTransactionHash()));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
@@ -135,7 +135,7 @@ public class DeliverCoinController {
     @PostMapping("/burn")
     public ResponseEntity<Map<String,String>> burn(@RequestBody MintBurnRequest request) {
         try {
-            TransactionReceipt receipt = deliverCoinService.burn(request.getAmount(), request.getEmail());
+            TransactionReceipt receipt = deliverCoinService.burn(request.getAmount());
             return ResponseEntity.ok(Map.of("status", "success", "transactionHash", receipt.getTransactionHash()));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
