@@ -79,8 +79,15 @@ public class AuthController {
         String refreshToken = jwtUtil.generateRefreshToken(username);
 
         log.error("Access Token: {}", accessToken);
+        AuthResponse authResponse = null;
+        try{
+            authResponse = new AuthResponse(accessToken, refreshToken, expiresIn, user.getRole(), user.getRole().getPermissions())
+        } catch (Exception e){
+            log.error("Error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
 
-        return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken, expiresIn, user.getRole(), user.getRole().getPermissions()));
+        return ResponseEntity.ok(authResponse);
     }
 
     @Operation(summary = "Refrescar token",
