@@ -103,6 +103,8 @@ public class SecurityConfig {
                         .hasAnyRole("ADMIN", "AUDITOR")
 
                         // OwnerController
+                        .requestMatchers(HttpMethod.GET, "/api/owners")
+                        .hasAnyRole("ADMIN", "AUDITOR")
                         .requestMatchers(HttpMethod.GET, "/api/owners/*/balances")
                         .hasAnyRole("ADMIN", "CORE", "AUDITOR")
                         .requestMatchers(HttpMethod.GET, "/api/owners/*/transactions/fiat", "/api/owners/*/transactions")

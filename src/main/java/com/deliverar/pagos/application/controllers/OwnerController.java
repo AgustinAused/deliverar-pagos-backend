@@ -39,11 +39,11 @@ public class OwnerController {
     @ResponseStatus(HttpStatus.OK)
     public GetOwnersResponse getOwners(@RequestParam(name = "page", required = false, defaultValue = "0") int pageNumber,
                                        @RequestParam(name = "size", required = false, defaultValue = "10") int size,
-                                       @RequestParam(name = "fieldBy", required = false, defaultValue = "") String fieldBy,
-                                       @RequestParam(name = "direction", required = false, defaultValue = "DESC") Sort.Direction sortDirection) {
+                                       @RequestParam(name = "fieldBy", required = false, defaultValue = "email") String fieldBy,
+                                       @RequestParam(name = "direction", required = false, defaultValue = "ASC") Sort.Direction sortDirection) {
         log.info("Get owners");
 
-        Page<Owner> page = getOwnerList.get(pageNumber, size, by(sortDirection, "fieldBy"));
+        Page<Owner> page = getOwnerList.get(pageNumber, size, by(sortDirection, fieldBy));
         return GetOwnersResponse.builder()
                 .ownersList(ownerMapper.toOwnerDtos(page.getContent()))
                 .totalElements(page.getNumberOfElements())
