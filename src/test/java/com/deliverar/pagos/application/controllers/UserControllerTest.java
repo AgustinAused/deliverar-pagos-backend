@@ -65,7 +65,7 @@ class UserControllerTest {
 
         String json = "{\"name\":\"John Doe\",\"email\":\"user@example.com\",\"password\":\"SecretPass\",\"role\":\"ADMIN\"}";
 
-        mockMvc.perform(post("/api/user")
+        mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isCreated())
@@ -88,7 +88,7 @@ class UserControllerTest {
                 .build();
         when(getUser.get(userId)).thenReturn(stubUser);
 
-        mockMvc.perform(get("/api/user/" + userId))
+        mockMvc.perform(get("/api/users/" + userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId.toString()))
                 .andExpect(jsonPath("$.name").value("Alice"))

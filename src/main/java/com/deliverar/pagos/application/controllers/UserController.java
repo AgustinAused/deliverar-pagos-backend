@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @Tag(name = "Usuarios", description = "Operaciones relacionadas con la gestión de usuarios")
-@RequestMapping("/api/user")
+@RequestMapping("/api/users")
 @RestController
 @RequiredArgsConstructor
 @Slf4j
