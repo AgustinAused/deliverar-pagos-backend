@@ -5,6 +5,7 @@ import com.deliverar.pagos.domain.dtos.MintBurnRequest;
 import com.deliverar.pagos.domain.dtos.TransactionResponse;
 import com.deliverar.pagos.domain.dtos.TransferRequest;
 import com.deliverar.pagos.domain.dtos.BuyCryptoRequest;
+import com.deliverar.pagos.domain.dtos.SellCryptoRequest;
 import com.deliverar.pagos.domain.entities.Transaction;
 import com.deliverar.pagos.domain.exceptions.BadRequestException;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -199,6 +200,31 @@ public class DeliverCoinController {
                     "status", "pending",
                     "trackingId", trackingId,
                     "message", "Compra iniciada y en proceso"
+            ));
+        } catch (BadRequestException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @Operation(summary = "Vender crypto por fiat",
+            description = "Permite a un usuario vender tokens DeliverCoin y recibir su balance en fiat")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "202", description = "Venta iniciada correctamente",
+                content = @Content(mediaType = "application/json",
+                schema = @Schema(example = "{\"status\": \"pending\", \"trackingId\": \"uuid\", \"message\": \"Venta iniciada y en proceso\"}"))),
+        @ApiResponse(responseCode = "400", description = "Balance insuficiente o datos inválidos",
+                content = @Content)
+    })
+    @PostMapping("/sell")
+    public ResponseEntity<Map<String, Object>> sellCrypto(@RequestBody SellCryptoRequest request) {
+        try {
+            UUID trackingId = deliverCoinService.sellCryptoForFiat(request.getEmail(), request.getAmount());
+            return ResponseEntity.accepted().body(Map.of(
+                    "status", "pending",
+                    "trackingId", trackingId,
+                    "message", "Venta iniciada y en proceso"
             ));
         } catch (BadRequestException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
