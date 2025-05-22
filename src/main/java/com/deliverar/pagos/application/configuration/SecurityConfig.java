@@ -54,10 +54,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOriginPatterns(List.of("")); // Permite cualquier origen
-        cfg.setAllowedMethods(List.of(""));        // Permite cualquier método
-        cfg.setAllowedHeaders(List.of("*"));        // Permite cualquier header
-        cfg.setAllowCredentials(true);
+        cfg.setAllowedOriginPatterns(List.of("*")); // Permite cualquier origen
+//        cfg.setAllowedMethods(List.of(""));        // Permite cualquier método
+//        cfg.setAllowedHeaders(List.of("*"));        // Permite cualquier header
+//        cfg.setAllowCredentials(true);
+        cfg.applyPermitDefaultValues();
         UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
         src.registerCorsConfiguration("/**", cfg);
         return src;
@@ -81,8 +82,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // AuthController
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/refresh")
+                        .requestMatchers("/api/auth/**")
                         .permitAll()
+
 
                         // Swagger/OpenAPI
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
@@ -128,7 +130,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/users/*")
                         .hasRole("ADMIN")
 
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 );
 
         return http.build();

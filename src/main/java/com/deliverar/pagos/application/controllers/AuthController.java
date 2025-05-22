@@ -24,10 +24,12 @@ import java.util.Map;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.extern.slf4j.Slf4j;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @Tag(name = "Autenticación", description = "Operaciones de autenticación y tokens JWT")
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -68,6 +70,7 @@ public class AuthController {
         User user = userRepository.findByEmailIgnoreCase(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
+        log.error("User: {}", user);
         String accessToken = jwtUtil.generateAccessToken(
                 username,
                 user.getId().toString(),
@@ -75,7 +78,16 @@ public class AuthController {
         );
         String refreshToken = jwtUtil.generateRefreshToken(username);
 
-        return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken, expiresIn, user.getRole(), user.getRole().getPermissions()));
+        log.error("Access Token: {}", accessToken);
+        AuthResponse authResponse = null;
+        try{
+            authResponse = new AuthResponse(accessToken, refreshToken, expiresIn, user.getRole(), user.getRole().getPermissions());
+        } catch (Exception e){
+            log.error("Error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        return ResponseEntity.ok(authResponse);
     }
 
     @Operation(summary = "Refrescar token",
