@@ -81,7 +81,7 @@ public class AuthController {
         log.error("Access Token: {}", accessToken);
         AuthResponse authResponse = null;
         try{
-            authResponse = new AuthResponse(accessToken, refreshToken, expiresIn, user.getRole(), user.getRole().getPermissions())
+            authResponse = new AuthResponse(accessToken, refreshToken, expiresIn, user.getRole(), user.getRole().getPermissions());
         } catch (Exception e){
             log.error("Error: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
