@@ -55,9 +55,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
         cfg.setAllowedOriginPatterns(List.of("*")); // Permite cualquier origen
-        cfg.setAllowedMethods(List.of(""));        // Permite cualquier método
-        cfg.setAllowedHeaders(List.of("*"));        // Permite cualquier header
-        cfg.setAllowCredentials(true);
+//        cfg.setAllowedMethods(List.of(""));        // Permite cualquier método
+//        cfg.setAllowedHeaders(List.of("*"));        // Permite cualquier header
+//        cfg.setAllowCredentials(true);
+        cfg.apllyedPermitDefaultValues();
         UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
         src.registerCorsConfiguration("/**", cfg);
         return src;
@@ -127,7 +128,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/users/*")
                         .hasRole("ADMIN")
 
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 );
 
         return http.build();
