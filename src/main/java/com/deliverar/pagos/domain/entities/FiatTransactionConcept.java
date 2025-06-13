@@ -4,5 +4,6 @@ public enum FiatTransactionConcept {
     DEPOSIT,
     WITHDRAWAL,
     BUY_CRYPTO,
-    SELL_CRYPTO;
+    SELL_CRYPTO,
+    TRANSFER
 }

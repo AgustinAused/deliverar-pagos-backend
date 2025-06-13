@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.springframework.data.domain.Sort.by;
@@ -38,6 +39,7 @@ public class OwnerController {
     private final GetOwnerTransactions getOwnerTransactions;
     private final GetOwnerFiatTransactions getOwnerFiatTransactions;
     private final ExchangeFiat exchangeFiat;
+    private final SendFiat sendFiat;
 
     @Operation(
             summary = "Listar owners",
@@ -198,5 +200,30 @@ public class OwnerController {
         log.info("Exchange ownerId {} with amount {} and operation {}", id, request.getAmount(), request.getOperation());
         Owner owner = getOwner.get(id);
         return exchangeFiat.exchange(owner, request.getAmount(), request.getOperation());
+    }
+
+    @Operation(
+            summary = "Enviar saldo fiat entre owners",
+            description = "Permite a un owner enviar saldo fiat a otro owner"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Saldo enviado exitosamente", content = @Content(schema = @Schema(implementation = SendFiatResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Owner no encontrado", content = @Content)
+    })
+    @PostMapping("/fiat/send")
+    @ResponseStatus(HttpStatus.OK)
+    public SendFiatResponse sendFiat(@RequestBody SendFiatRequest request) {
+        log.info("Send fiat request: {}", request);
+        try {
+            SendFiatResponse response = sendFiat.sendFiat(request);
+            return SendFiatResponse.builder()
+                    .status(response.getStatus())
+                    .message(response.getMessage())
+                    .build();
+        }catch (Exception e) {
+            log.error("Error sending fiat: {}", e.getMessage());
+            throw e;
+        }
     }
 }
