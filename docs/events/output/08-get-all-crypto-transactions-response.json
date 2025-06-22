@@ -24,7 +24,7 @@
         "transactionDate": "2024-01-15T09:15:00Z"
       }
     ],
-    "totalElements": 2,
+    "totalElements": 2, // TODO: Hay que definir si lo quieren hacer peginado o desde una fecha
     "totalPages": 1,
     "currentPage": 0,
     "pageSize": 20

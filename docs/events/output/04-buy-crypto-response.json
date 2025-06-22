@@ -5,7 +5,7 @@
     "email": "juan.perez@example.com",
     "cryptoAmount": "50.00",
     "fiatAmount": "1000.00",
-    "status": "PENDING",
+    "status": "PENDING",  // TODO: comunicamos el estado intermedio pending? o sólo el resultado failed/success?
     "blockchainTxHash": "0xabcdef1234567890...",
     "transactionDate": "2024-01-15T10:30:00Z"
   }

@@ -2,7 +2,6 @@
   "topic": "buy.crypto.request",
   "data": {
     "email": "juan.perez@example.com",
-    "amount": "50.00",
-    "fiatAmount": "1000.00"
+    "amount": "50.00"
   }
 }

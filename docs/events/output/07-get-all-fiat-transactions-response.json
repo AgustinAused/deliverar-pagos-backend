@@ -24,6 +24,6 @@
     "totalElements": 2,
     "totalPages": 1,
     "currentPage": 0,
-    "pageSize": 20
+    "pageSize": 20 // TODO: Hay que definir si lo quieren hacer peginado o desde una fecha
   }
 }

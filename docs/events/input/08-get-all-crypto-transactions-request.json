@@ -1,6 +1,7 @@
 {
   "topic": "get.all.crypto.transactions.request",
   "data": {
+    // TODO: Hay que definir si lo quieren hacer peginado o desde una fecha
     "page": 0,
     "size": 20,
     "sortBy": "transactionDate",

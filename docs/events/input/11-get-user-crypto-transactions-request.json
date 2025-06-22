@@ -1,6 +1,7 @@
 {
   "topic": "get.user.crypto.transactions.request",
   "data": {
+    // TODO: Hay que definir si lo quieren hacer peginado o desde una fecha
     "email": "juan.perez@example.com",
     "page": 0,
     "size": 10,

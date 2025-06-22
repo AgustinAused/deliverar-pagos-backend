@@ -1,5 +1,6 @@
 {
   "topic": "get.all.fiat.transactions.request",
+  // TODO: Hay que definir si lo quieren hacer peginado o desde una fecha
   "data": {
     "page": 0,
     "size": 20,

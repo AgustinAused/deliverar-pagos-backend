@@ -6,7 +6,7 @@
     "toEmail": "maria.garcia@example.com",
     "amount": "100.50",
     "concept": "Pago por servicios",
-    "status": "PENDING",
+    "status": "PENDING", // TODO: comunicamos el estado intermedio pending? o sólo el resultado failed/success?
     "blockchainTxHash": "0x1234567890abcdef...",
     "transactionDate": "2024-01-15T10:30:00Z"
   }

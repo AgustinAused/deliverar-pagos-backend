@@ -1,4 +1,5 @@
 {
+  // TODO: confirmar si queremos user o walled.deletion
   "topic": "user.deletion.response",
   "data": {
     "email": "juan.perez@example.com",

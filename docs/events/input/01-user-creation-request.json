@@ -1,9 +1,10 @@
 {
+  // TODO: No sé si client, delivery y marketplace publicarían walled.creation.request o user?
   "topic": "user.creation.request",
   "data": {
     "name": "Juan Pérez",
     "email": "juan.perez@example.com",
-    "password": "SecurePassword123!",
-    "role": "CORE"
+    "initial_fiat_balance": 10000,
+    "initial_crypto_balance": 500
   }
 }
