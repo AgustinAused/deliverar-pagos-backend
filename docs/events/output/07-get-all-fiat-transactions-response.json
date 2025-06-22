@@ -1,9 +1,12 @@
 {
   "topic": "get.all.fiat.transactions.response",
   "data": {
+    "traceData" : {
+      "originModule" : "module-name", // Módulo que hizo el pedido
+      "traceId" : "xxx"  // El id que ellos usan para identificar su propio pedido
+    },
     "transactions": [
       {
-        "id": "550e8400-e29b-41d4-a716-446655440005",
         "email": "juan.perez@example.com",
         "amount": "5000.00",
         "concept": "Depósito bancario",
@@ -12,7 +15,6 @@
         "transactionDate": "2024-01-15T10:30:00Z"
       },
       {
-        "id": "550e8400-e29b-41d4-a716-446655440006",
         "email": "maria.garcia@example.com",
         "amount": "250.00",
         "concept": "Pago de factura",
@@ -21,9 +23,6 @@
         "transactionDate": "2024-01-15T09:15:00Z"
       }
     ],
-    "totalElements": 2,
-    "totalPages": 1,
-    "currentPage": 0,
-    "pageSize": 20 // TODO: Hay que definir si lo quieren hacer peginado o desde una fecha
+    "transactionDateSince": "2024-01-01T09:15:00Z" // Desde qué fecha quieren que le pasemos, si no está/está vacía pasamos todas
   }
 }

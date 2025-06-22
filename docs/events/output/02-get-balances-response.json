@@ -1,6 +1,10 @@
 {
   "topic": "get.balances.response",
   "data": {
+    "traceData" : {
+      "originModule" : "module-name", // Módulo que hizo el pedido
+      "traceId" : "xxx"  // El id que ellos usan para identificar su propio pedido
+    },
     "email": "juan.perez@example.com",
     "fiatBalance": "5000.00",
     "cryptoBalance": "150.75",

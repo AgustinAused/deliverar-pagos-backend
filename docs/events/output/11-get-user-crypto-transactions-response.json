@@ -1,6 +1,10 @@
 {
   "topic": "get.user.crypto.transactions.response",
   "data": {
+    "traceData" : {
+      "originModule" : "module-name", // Módulo que hizo el pedido
+      "traceId" : "xxx"  // El id que ellos usan para identificar su propio pedido
+    },
     "email": "juan.perez@example.com",
     "transactions": [
       {
@@ -24,9 +28,6 @@
         "transactionDate": "2024-01-15T09:15:00Z"
       }
     ],
-    "totalElements": 2, // TODO: Hay que definir si lo quieren hacer peginado o desde una fecha
-    "totalPages": 1,
-    "currentPage": 0,
-    "pageSize": 10
+    "transactionDateSince": "2024-01-01T09:15:00Z" // Desde qué fecha quieren que le pasemos, si no está/está vacía pasamos todas
   }
 }

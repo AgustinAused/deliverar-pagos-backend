@@ -1,6 +1,11 @@
 {
   "topic": "buy.crypto.request",
   "data": {
+    // Este objeto lo repetimos en la response para que nuestros consumidores sepan a quién le respondimos y a qué pedido
+    "traceData" : {
+      "originModule" : "module-name", // Módulo que hizo el pedido
+      "traceId" : "xxx"  // El id que ellos usan para identificar su propio pedido
+    },
     "email": "juan.perez@example.com",
     "amount": "50.00"
   }

@@ -1,11 +1,16 @@
 {
   "topic": "fiat.deposit.response",
   "data": {
-    "transactionId": "550e8400-e29b-41d4-a716-446655440003",
+    "traceData" : {
+      "originModule" : "module-name", // Módulo que hizo el pedido
+      "traceId" : "xxx"  // El id que ellos usan para identificar su propio pedido
+    },
     "email": "juan.perez@example.com",
     "amount": "5000.00",
     "concept": "Depósito bancario",
     "status": "SUCCESS",
-    "transactionDate": "2024-01-15T10:30:00Z"
+    "transactionDate": "2024-01-15T10:30:00Z",
+    "currentFiatBalance": "5000.00", // En cuanto quedó el saldo de pesos
+    "currentCryptoBalance": "150.75" // En cuanto quedó el saldo de cryptos
   }
 }

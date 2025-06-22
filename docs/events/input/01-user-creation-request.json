@@ -2,6 +2,11 @@
   // TODO: No sé si client, delivery y marketplace publicarían walled.creation.request o user?
   "topic": "user.creation.request",
   "data": {
+    // Este objeto lo repetimos en la response para que nuestros consumidores sepan a quién le respondimos y a qué pedido
+    "traceData" : {
+      "originModule" : "module-name", // Módulo que hizo el pedido
+      "traceId" : "xxx"  // El id que ellos usan para identificar su propio pedido
+    },
     "name": "Juan Pérez",
     "email": "juan.perez@example.com",
     "initial_fiat_balance": 10000,
