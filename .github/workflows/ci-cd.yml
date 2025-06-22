@@ -90,8 +90,8 @@ jobs:
           OWNER_MAIL=${{ secrets.OWNER_MAIL }}
           OWNER_NAME=${{ secrets.OWNER_NAME }}
           HUB_URL=${{ secrets.HUB_URL }}
-          HUB_USER=${{ secrets.HUB_USER }}
-          HUB_PASSWORD=${{ secrets.HUB_PASSWORD }}
+          HUB_USER="${{ secrets.HUB_USER }}"
+          HUB_PASSWORD="${{ secrets.HUB_PASSWORD }}"
           EOF
           ls -la .env
           
