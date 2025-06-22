@@ -1,0 +1,220 @@
+@startuml Event Class Structure
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+
+package "Events" {
+    abstract class Event {
+        +String topic
+        +Map<String, Object> data
+        +String eventId
+        +LocalDateTime timestamp
+        +getTopic(): String
+        +getData(): Map<String, Object>
+    }
+    
+    class IncomingEvent {
+        +String correlationId
+        +String source
+        +validate(): boolean
+    }
+    
+    class OutgoingEvent {
+        +String correlationId
+        +String target
+        +EventStatus status
+        +buildResponse(): OutgoingEvent
+    }
+    
+    enum EventType {
+        USER_CREATION_REQUEST
+        USER_DELETION_REQUEST
+        GET_BALANCES_REQUEST
+        GET_USER_FIAT_TRANSACTIONS_REQUEST
+        GET_USER_CRYPTO_TRANSACTIONS_REQUEST
+        FIAT_DEPOSIT_REQUEST
+        FIAT_WITHDRAWAL_REQUEST
+        FIAT_PAYMENT_REQUEST
+        CRYPTO_PAYMENT_REQUEST
+        BUY_CRYPTO_REQUEST
+        SELL_CRYPTO_REQUEST
+        GET_ALL_FIAT_TRANSACTIONS_REQUEST
+        GET_ALL_CRYPTO_TRANSACTIONS_REQUEST
+        USER_CREATION_RESPONSE
+        USER_DELETION_RESPONSE
+        GET_BALANCES_RESPONSE
+        GET_USER_FIAT_TRANSACTIONS_RESPONSE
+        GET_USER_CRYPTO_TRANSACTIONS_RESPONSE
+        FIAT_DEPOSIT_RESPONSE
+        FIAT_WITHDRAWAL_RESPONSE
+        FIAT_PAYMENT_RESPONSE
+        CRYPTO_PAYMENT_RESPONSE
+        BUY_CRYPTO_RESPONSE
+        SELL_CRYPTO_RESPONSE
+        GET_ALL_FIAT_TRANSACTIONS_RESPONSE
+        GET_ALL_CRYPTO_TRANSACTIONS_RESPONSE
+        ERROR_RESPONSE
+    }
+    
+    enum EventStatus {
+        SUCCESS
+        FAILURE
+        PENDING
+    }
+}
+
+package "Commands" {
+    interface Command {
+        +execute(IncomingEvent): CommandResult
+        +canHandle(EventType): boolean
+    }
+    
+    class CommandResult {
+        +boolean success
+        +String message
+        +Object data
+        +List<String> errors
+        +buildSuccess(Object): CommandResult
+        +buildFailure(String): CommandResult
+    }
+    
+    abstract class BaseCommand {
+        +execute(IncomingEvent): CommandResult
+        +validate(IncomingEvent): boolean
+        +process(IncomingEvent): CommandResult
+    }
+    
+    class CreateUserCommand {
+        -CreateUser createUserUseCase
+        +process(IncomingEvent): CommandResult
+    }
+    
+    class DeleteUserCommand {
+        -DeleteUser deleteUserUseCase
+        +process(IncomingEvent): CommandResult
+    }
+    
+    class GetBalancesCommand {
+        -GetBalances getBalancesUseCase
+        +process(IncomingEvent): CommandResult
+    }
+    
+    class GetUserFiatTransactionsCommand {
+        -GetFiatTransactions getFiatTransactionsUseCase
+        +process(IncomingEvent): CommandResult
+    }
+    
+    class GetUserCryptoTransactionsCommand {
+        -GetTransactions getTransactionsUseCase
+        +process(IncomingEvent): CommandResult
+    }
+    
+    class FiatDepositCommand {
+        -ExchangeFiat exchangeFiatUseCase
+        +process(IncomingEvent): CommandResult
+    }
+    
+    class FiatWithdrawalCommand {
+        -ExchangeFiat exchangeFiatUseCase
+        +process(IncomingEvent): CommandResult
+    }
+    
+    class FiatPaymentCommand {
+        -ExchangeFiat exchangeFiatUseCase
+        +process(IncomingEvent): CommandResult
+    }
+    
+    class CryptoPaymentCommand {
+        -DeliverCoinService cryptoService
+        +process(IncomingEvent): CommandResult
+    }
+    
+    class BuyCryptoCommand {
+        -DeliverCoinService cryptoService
+        +process(IncomingEvent): CommandResult
+    }
+    
+    class SellCryptoCommand {
+        -DeliverCoinService cryptoService
+        +process(IncomingEvent): CommandResult
+    }
+    
+    class GetAllFiatTransactionsCommand {
+        -GetOwnerFiatTransactions getOwnerFiatTransactionsUseCase
+        +process(IncomingEvent): CommandResult
+    }
+    
+    class GetAllCryptoTransactionsCommand {
+        -GetOwnerTransactions getOwnerTransactionsUseCase
+        +process(IncomingEvent): CommandResult
+    }
+}
+
+package "Handlers" {
+    interface EventHandler {
+        +handle(IncomingEvent): void
+        +canHandle(EventType): boolean
+    }
+    
+    class EventRouter {
+        -Map<EventType, EventHandler> handlers
+        -CommandManager commandManager
+        +routeEvent(IncomingEvent): void
+        +registerHandler(EventType, EventHandler): void
+    }
+    
+    class DefaultEventHandler {
+        -CommandManager commandManager
+        -EventPublisher eventPublisher
+        +handle(IncomingEvent): void
+        +publishResponse(CommandResult): void
+    }
+}
+
+package "Management" {
+    class CommandManager {
+        -List<Command> commands
+        +executeCommand(IncomingEvent): CommandResult
+        +registerCommand(Command): void
+        +findCommand(EventType): Command
+    }
+    
+    class EventPublisher {
+        -HubPublisher hubPublisher
+        +publish(OutgoingEvent): void
+        +publishError(IncomingEvent, String): void
+    }
+}
+
+' Relationships
+Event <|-- IncomingEvent
+Event <|-- OutgoingEvent
+EventType --> Event
+EventStatus --> OutgoingEvent
+
+Command <|.. BaseCommand
+BaseCommand <|-- CreateUserCommand
+BaseCommand <|-- DeleteUserCommand
+BaseCommand <|-- GetBalancesCommand
+BaseCommand <|-- GetUserFiatTransactionsCommand
+BaseCommand <|-- GetUserCryptoTransactionsCommand
+BaseCommand <|-- FiatDepositCommand
+BaseCommand <|-- FiatWithdrawalCommand
+BaseCommand <|-- FiatPaymentCommand
+BaseCommand <|-- CryptoPaymentCommand
+BaseCommand <|-- BuyCryptoCommand
+BaseCommand <|-- SellCryptoCommand
+BaseCommand <|-- GetAllFiatTransactionsCommand
+BaseCommand <|-- GetAllCryptoTransactionsCommand
+Command --> CommandResult
+
+EventHandler <|.. DefaultEventHandler
+EventRouter --> EventHandler
+EventRouter --> CommandManager
+DefaultEventHandler --> CommandManager
+DefaultEventHandler --> EventPublisher
+
+CommandManager --> Command
+EventPublisher --> OutgoingEvent
+
+@enduml 

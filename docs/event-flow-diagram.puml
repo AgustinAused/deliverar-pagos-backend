@@ -1,0 +1,76 @@
+@startuml Event Flow Architecture
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam componentStyle rectangle
+
+package "External Hub" {
+    [Hub de Eventos] as HUB
+}
+
+package "API Layer" {
+    [CallbackController] as CC
+}
+
+package "Event Processing Layer" {
+    [EventRouter] as ER
+    [EventHandler] as EH
+    [EventPublisher] as EP
+}
+
+package "Command Layer" {
+    [CommandManager] as CM
+    [CommandStrategy] as CS
+}
+
+package "Business Logic Layer" {
+    [UseCase] as UC
+    [Repository] as REP
+}
+
+package "Infrastructure" {
+    database "Database" as DB
+    [Blockchain] as BC
+}
+
+' Flujo principal
+HUB --> CC : Evento de Entrada
+CC --> ER : Route Event
+ER --> EH : Handle Event
+EH --> CM : Execute Command
+CM --> CS : Process Strategy
+CS --> UC : Execute Business Logic
+UC --> REP : Persist Data
+UC --> BC : Blockchain Operation
+REP --> DB : Database Operation
+BC --> UC : Blockchain Result
+UC --> CS : Business Result
+CS --> CM : Command Result
+CM --> EH : Processing Complete
+EH --> EP : Publish Response
+EP --> HUB : Evento de Salida
+
+' Relaciones adicionales
+ER --> CS : Strategy Selection
+EP --> CS : Response Data
+
+note right of HUB
+  Eventos de Entrada:
+  - USER_REGISTRATION_REQUEST
+  - CRYPTO_BUY_REQUEST
+  - CRYPTO_SELL_REQUEST
+  - TRANSFER_REQUEST
+  - BALANCE_QUERY_REQUEST
+end note
+
+note left of EP
+  Eventos de Salida:
+  - USER_REGISTRATION_RESPONSE
+  - CRYPTO_BUY_RESPONSE
+  - CRYPTO_SELL_RESPONSE
+  - TRANSFER_RESPONSE
+  - BALANCE_QUERY_RESPONSE
+  - ERROR_RESPONSE
+end note
+
+@enduml 

@@ -1,0 +1,93 @@
+@startuml Event Sequence Flow
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+
+actor "External System" as EXT
+participant "Hub" as HUB
+participant "CallbackController" as CC
+participant "EventRouter" as ER
+participant "EventHandler" as EH
+participant "CommandManager" as CM
+participant "CommandStrategy" as CS
+participant "UseCase" as UC
+participant "Repository" as REP
+participant "Database" as DB
+participant "Blockchain" as BC
+participant "EventPublisher" as EP
+
+EXT -> HUB: Publish Event
+HUB -> CC: POST /callback
+activate CC
+
+CC -> ER: routeEvent(event)
+activate ER
+
+ER -> ER: validateEvent(event)
+ER -> ER: findHandler(eventType)
+ER -> EH: handle(event)
+activate EH
+
+EH -> CM: executeCommand(event)
+activate CM
+
+CM -> CS: process(event)
+activate CS
+
+CS -> UC: execute(event.data)
+activate UC
+
+UC -> REP: findById(id)
+activate REP
+REP -> DB: SELECT
+activate DB
+DB --> REP: data
+deactivate DB
+REP --> UC: entity
+deactivate REP
+
+UC -> BC: blockchainOperation()
+activate BC
+BC --> UC: result
+deactivate BC
+
+UC -> REP: save(entity)
+activate REP
+REP -> DB: UPDATE
+activate DB
+DB --> REP: success
+deactivate DB
+REP --> UC: saved
+deactivate REP
+
+UC --> CS: result
+deactivate UC
+
+CS -> CS: buildResponse(result)
+CS --> CM: commandResult
+deactivate CS
+
+CM --> EH: processingComplete
+deactivate CM
+
+EH -> EP: publishResponse(responseEvent)
+activate EP
+EP -> HUB: POST /hub/publish
+activate HUB
+HUB --> EP: 200 OK
+deactivate HUB
+EP --> EH: published
+deactivate EP
+
+EH --> ER: handled
+deactivate EH
+
+ER --> CC: routed
+deactivate ER
+
+CC --> HUB: 204 No Content
+deactivate CC
+
+HUB --> EXT: Event Processed
+
+@enduml 
