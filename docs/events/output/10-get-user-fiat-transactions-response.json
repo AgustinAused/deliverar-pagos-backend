@@ -1,0 +1,28 @@
+{
+  "topic": "get.user.fiat.transactions.response",
+  "data": {
+    "email": "juan.perez@example.com",
+    "transactions": [
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440010",
+        "amount": "5000.00",
+        "concept": "Depósito bancario",
+        "type": "DEPOSIT",
+        "status": "SUCCESS",
+        "transactionDate": "2024-01-15T10:30:00Z"
+      },
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440011",
+        "amount": "250.00",
+        "concept": "Pago de factura",
+        "type": "PAYMENT",
+        "status": "SUCCESS",
+        "transactionDate": "2024-01-15T09:15:00Z"
+      }
+    ],
+    "totalElements": 2,
+    "totalPages": 1,
+    "currentPage": 0,
+    "pageSize": 10
+  }
+}

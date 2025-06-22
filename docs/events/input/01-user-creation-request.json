@@ -1,0 +1,9 @@
+{
+  "topic": "user.creation.request",
+  "data": {
+    "name": "Juan Pérez",
+    "email": "juan.perez@example.com",
+    "password": "SecurePassword123!",
+    "role": "CORE"
+  }
+}

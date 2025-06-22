@@ -1,0 +1,32 @@
+{
+  "topic": "get.all.crypto.transactions.response",
+  "data": {
+    "transactions": [
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440007",
+        "fromEmail": "juan.perez@example.com",
+        "toEmail": "maria.garcia@example.com",
+        "amount": "100.50",
+        "concept": "Pago por servicios",
+        "type": "PAYMENT",
+        "status": "PENDING",
+        "blockchainTxHash": "0x1234567890abcdef...",
+        "transactionDate": "2024-01-15T10:30:00Z"
+      },
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440008",
+        "email": "juan.perez@example.com",
+        "amount": "50.00",
+        "concept": "Compra de crypto",
+        "type": "BUY",
+        "status": "PENDING",
+        "blockchainTxHash": "0xabcdef1234567890...",
+        "transactionDate": "2024-01-15T09:15:00Z"
+      }
+    ],
+    "totalElements": 2,
+    "totalPages": 1,
+    "currentPage": 0,
+    "pageSize": 20
+  }
+}

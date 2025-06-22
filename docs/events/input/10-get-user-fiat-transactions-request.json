@@ -1,0 +1,10 @@
+{
+  "topic": "get.user.fiat.transactions.request",
+  "data": {
+    "email": "juan.perez@example.com",
+    "page": 0,
+    "size": 10,
+    "sortBy": "transactionDate",
+    "sortDirection": "DESC"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "topic": "fiat.payment.response",
+  "data": {
+    "transactionId": "550e8400-e29b-41d4-a716-446655440004",
+    "fromEmail": "juan.perez@example.com",
+    "toEmail": "maria.garcia@example.com",
+    "amount": "250.00",
+    "concept": "Pago de factura",
+    "status": "SUCCESS",
+    "transactionDate": "2024-01-15T10:30:00Z"
+  }
+}

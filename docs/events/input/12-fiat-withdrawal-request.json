@@ -1,0 +1,8 @@
+{
+  "topic": "fiat.withdrawal.request",
+  "data": {
+    "email": "juan.perez@example.com",
+    "amount": "1000.00",
+    "concept": "Retiro a cuenta bancaria"
+  }
+}
