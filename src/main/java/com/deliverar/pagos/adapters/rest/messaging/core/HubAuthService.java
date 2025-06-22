@@ -1,5 +1,7 @@
 package com.deliverar.pagos.adapters.rest.messaging.core;
 
+import com.deliverar.pagos.domain.exceptions.InternalServerException;
+import com.deliverar.pagos.domain.exceptions.UnauthorizedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -37,6 +39,7 @@ public class HubAuthService {
     }
 
     public Mono<Void> refreshToken() {
+        cachedToken.set(null);
         return login().then();
     }
 
@@ -46,14 +49,23 @@ public class HubAuthService {
                 .uri("/auth/login")
                 .bodyValue(Map.of("username", user, "password", pass))
                 .retrieve()
-                .onStatus(HttpStatusCode::isError, resp -> Mono.error(new RuntimeException("Login failed: " + resp.statusCode())))
+                .onStatus(status -> status.value() == 401,
+                        response -> Mono.error(new UnauthorizedException("Credenciales inválidas")))
+                .onStatus(HttpStatusCode::is4xxClientError,
+                        response -> Mono.error(new InternalServerException("Client error en login: " + response.statusCode().value())))
+                .onStatus(HttpStatusCode::is5xxServerError,
+                        response -> Mono.error(new InternalServerException("Server error en login: " + response.statusCode().value())))
                 .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {
                 })
-                .map(body -> {
+                .<String>handle((body, sink) -> {
                     String token = (String) body.get("access_token");
+                    if (token == null || token.isEmpty()) {
+                        sink.error(new InternalServerException("Token no encontrado en la respuesta del login"));
+                        return;
+                    }
                     cachedToken.set(token);
                     log.debug("Token obtenido exitosamente");
-                    return token;
+                    sink.next(token);
                 })
                 .doOnError(err -> log.error("Error durante el login al Hub", err));
     }
