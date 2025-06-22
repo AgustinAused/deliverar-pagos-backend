@@ -47,11 +47,6 @@ public class CallbackController {
         try {
             log.info("Evento recibido: {}", event);
 
-            // ToDo: remove this
-            if (event.topic().equals("fail-testing")) {
-                throw new RuntimeException("Test error");
-            }
-
             // Internal event publication
             applicationEventPublisher.publishEvent(
                     new ImmutableEvent(event.topic(), event.data())
