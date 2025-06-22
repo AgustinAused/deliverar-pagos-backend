@@ -1,0 +1,33 @@
+{
+  "topic": "get.user.crypto.transactions.response",
+  "data": {
+    "traceData" : {
+      "originModule" : "module-name", // Módulo que hizo el pedido
+      "traceId" : "xxx"  // El id que ellos usan para identificar su propio pedido
+    },
+    "email": "juan.perez@example.com",
+    "transactions": [
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440012",
+        "fromEmail": "juan.perez@example.com",
+        "toEmail": "maria.garcia@example.com",
+        "amount": "100.50",
+        "concept": "Pago por servicios",
+        "type": "PAYMENT",
+        "status": "PENDING",
+        "blockchainTxHash": "0x1234567890abcdef...",
+        "transactionDate": "2024-01-15T10:30:00Z"
+      },
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440013",
+        "amount": "50.00",
+        "concept": "Compra de crypto",
+        "type": "BUY",
+        "status": "PENDING",
+        "blockchainTxHash": "0xabcdef1234567890...",
+        "transactionDate": "2024-01-15T09:15:00Z"
+      }
+    ],
+    "transactionDateSince": "2024-01-01T09:15:00Z" // Desde qué fecha quieren que le pasemos, si no está/está vacía pasamos todas
+  }
+}

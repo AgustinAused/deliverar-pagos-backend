@@ -1,0 +1,13 @@
+{
+  "topic": "<cualquier.topico>", // Este topic representa cómo va a ser la respuesta en caso de error
+  "data": {
+    "traceData" : {
+      "originModule" : "module-name", // Módulo que hizo el pedido
+      "traceId" : "xxx"  // El id que ellos usan para identificar su propio pedido
+    },
+    "errorCode": 400, // HttpStatusCode
+    "message": "Los datos proporcionados no son válidos",
+    "details": ["El email es requerido"],
+    "timestamp": "2024-01-15T10:30:00Z"
+  }
+}

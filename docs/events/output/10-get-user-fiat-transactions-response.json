@@ -1,0 +1,27 @@
+{
+  "topic": "get.user.fiat.transactions.response",
+  "data":  {
+    "traceData" : {
+      "originModule" : "module-name", // Módulo que hizo el pedido
+      "traceId" : "xxx"  // El id que ellos usan para identificar su propio pedido
+    },
+    "email": "juan.perez@example.com",
+    "transactions": [
+      {
+        "amount": "5000.00",
+        "concept": "Depósito bancario",
+        "type": "DEPOSIT",
+        "status": "SUCCESS",
+        "transactionDate": "2024-01-15T10:30:00Z"
+      },
+      {
+        "amount": "250.00",
+        "concept": "Pago de factura",
+        "type": "PAYMENT",
+        "status": "SUCCESS",
+        "transactionDate": "2024-01-15T09:15:00Z"
+      }
+    ],
+    "transactionDateSince": "2024-01-01T09:15:00Z" // Desde qué fecha quieren que le pasemos, si no está/está vacía pasamos todas
+  }
+}

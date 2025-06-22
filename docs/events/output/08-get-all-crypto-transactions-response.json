@@ -1,0 +1,34 @@
+{
+  "topic": "get.all.crypto.transactions.response",
+  "data": {
+    "traceData" : {
+      "originModule" : "module-name", // Módulo que hizo el pedido
+      "traceId" : "xxx"  // El id que ellos usan para identificar su propio pedido
+    },
+    "transactions": [
+      {
+        "fromEmail": "juan.perez@example.com",
+        "toEmail": "maria.garcia@example.com",
+        "amount": "100.50",
+        "concept": "Pago por servicios",
+        "type": "PAYMENT",
+        "status": "PENDING",
+        "blockchainTxHash": "0x1234567890abcdef...",
+        "transactionDate": "2024-01-15T10:30:00Z"
+      },
+      {
+        // Cuando es compra  de crypto el mail de inicio es el de Deliverar que es el "banco de cryptos"
+        // Recomiendo que a los que muestran los listados tengan en cuenta eso, capaz prefieren no mostrarlo
+        "fromEmail": "deliverar@example.com",
+        "toEmail": "maria.garcia@example.com", // El user que compra crypto
+        "amount": "50.00",
+        "concept": "Compra de crypto",
+        "type": "BUY",
+        "status": "PENDING",
+        "blockchainTxHash": "0xabcdef1234567890...",
+        "transactionDate": "2024-01-15T09:15:00Z"
+      }
+    ],
+    "transactionDateSince": "2024-01-01T09:15:00Z" // Desde qué fecha quieren que le pasemos, si no está/está vacía pasamos todas
+  }
+}

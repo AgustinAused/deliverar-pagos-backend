@@ -1,0 +1,12 @@
+{
+  "topic": "get.all.fiat.transactions.request",
+  // TODO: Hay que definir si lo quieren hacer peginado o desde una fecha
+  "data": {
+    // Este objeto lo repetimos en la response para que nuestros consumidores sepan a quién le respondimos y a qué pedido
+    "traceData" : {
+      "originModule" : "module-name", // Módulo que hizo el pedido
+      "traceId" : "xxx"  // El id que ellos usan para identificar su propio pedido
+    },
+    "transactionDateSince": "2024-01-01T09:15:00Z" // Desde qué fecha quieren que le pasemos, si no está/está vacía pasamos todas
+  }
+}

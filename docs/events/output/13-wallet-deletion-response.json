@@ -1,0 +1,12 @@
+{
+  "topic": "wallet.deletion.response",
+  "data": {
+    "traceData" : {
+      "originModule" : "module-name", // Módulo que hizo el pedido
+      "traceId" : "xxx"  // El id que ellos usan para identificar su propio pedido
+    },
+    "email": "juan.perez@example.com",
+    "deletedAt": "2024-01-15T10:30:00Z",
+    "message": "Usuario eliminado exitosamente"
+  }
+}
