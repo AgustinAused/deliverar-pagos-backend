@@ -1,5 +1,6 @@
-package com.deliverar.pagos.adapters.rest.messaging;
+package com.deliverar.pagos.adapters.rest.messaging.core;
 
+import com.deliverar.pagos.adapters.rest.messaging.core.dtos.ImmutableEvent;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -42,12 +43,16 @@ public class CallbackController {
     })
     @PostMapping
     public ResponseEntity<Void> receiveEvent(
-            @Parameter(description = "Payload del evento") @RequestBody HubCallback callback) {
+            @Parameter(description = "Payload del evento") @RequestBody ImmutableEvent event) {
         try {
-            log.info("Evento recibido: {}", callback);
-            if (callback.event().equals("fail-testing")) {
+            log.info("Evento recibido: {}", event);
+
+            // ToDo: remove this
+            if (event.topic().equals("fail-testing")) {
                 throw new RuntimeException("Test error");
             }
+
+            // Internal event publication
 //            applicationEventPublisher.publishEvent(
 //                new HubEvent(callback.event(), callback.data())
 //            );
@@ -59,7 +64,7 @@ public class CallbackController {
     }
 
     @PostMapping("/test")
-    public ResponseEntity<String> testPublish(@RequestBody HubPublish pub) {
+    public ResponseEntity<String> testPublish(@RequestBody ImmutableEvent pub) {
         try {
             hubPublisher.publish(pub).block();
             return ResponseEntity.ok("Publicado: " + pub);

@@ -1,5 +1,6 @@
-package com.deliverar.pagos.adapters.rest.messaging;
+package com.deliverar.pagos.adapters.rest.messaging.core;
 
+import com.deliverar.pagos.adapters.rest.messaging.core.dtos.ImmutableEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -10,14 +11,16 @@ import reactor.core.publisher.Mono;
 @Service
 public class HubPublisher {
     private final WebClient webClient;
+    private final HubAuthService authService;
 
-    public HubPublisher(@Value("${hub.url}") String hubUrl) {
+    public HubPublisher(@Value("${hub.url}") String hubUrl, HubAuthService authService) {
         this.webClient = WebClient.builder()
                 .baseUrl(hubUrl)
                 .build();
+        this.authService = authService;
     }
 
-    public Mono<Void> publish(HubPublish pub) {
+    public Mono<Void> publish(ImmutableEvent pub) {
         log.debug("Enviando petición al Hub: {}", pub);
         return webClient.post()
                 .uri("/hub/publish")
