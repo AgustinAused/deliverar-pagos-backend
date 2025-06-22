@@ -12,6 +12,13 @@ Este directorio contiene toda la documentación técnica del proyecto, incluyend
 - **[event-class-diagram.puml](./event-class-diagram.puml)** - Diagrama de clases de la implementación (PlantUML)
 - **[implementation-example.md](./implementation-example.md)** - Ejemplo de implementación con código Java
 
+### 📝 Especificación de Eventos
+
+- **[events/](./events/)** - Directorio completo con ejemplos JSON de todos los eventos
+  - **[events/entrada/](events/input/)** - 13 eventos de entrada con ejemplos JSON
+  - **[events/salida/](events/output/)** - 14 eventos de salida con ejemplos JSON
+  - **[events/README.md](./events/README.md)** - Documentación detallada de cada evento
+
 ### 🎯 Patrones de Diseño Implementados
 
 1. **Event-Driven Architecture (EDA)**
@@ -106,11 +113,12 @@ Los diagramas en formato Mermaid pueden ser visualizados en:
 
 1. ✅ Crear documentación de arquitectura
 2. ✅ Definir eventos específicos del dominio
-3. 🔄 Implementar estructura base de eventos
-4. ⏳ Crear handlers para eventos existentes
-5. ⏳ Migrar lógica de negocio a comandos
-6. ⏳ Implementar sistema de métricas
-7. ⏳ Agregar tests unitarios y de integración
+3. ✅ Implementar estructura base de eventos
+4. ✅ Crear documentación de eventos con ejemplos JSON
+5. 🔄 Crear handlers para eventos existentes
+6. ⏳ Migrar lógica de negocio a comandos
+7. ⏳ Implementar sistema de métricas
+8. ⏳ Agregar tests unitarios y de integración
 
 ## Contribución
 
