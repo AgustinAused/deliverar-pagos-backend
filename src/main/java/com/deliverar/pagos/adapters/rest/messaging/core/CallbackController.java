@@ -53,9 +53,9 @@ public class CallbackController {
             }
 
             // Internal event publication
-//            applicationEventPublisher.publishEvent(
-//                new HubEvent(callback.event(), callback.data())
-//            );
+            applicationEventPublisher.publishEvent(
+                    new ImmutableEvent(event.topic(), event.data())
+            );
             return ResponseEntity.noContent().build();
         } catch (Exception ex) {
             log.error("Error procesando evento del hub, devolviendo 200 OK para evitar retry", ex);
