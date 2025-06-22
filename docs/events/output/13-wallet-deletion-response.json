@@ -1,6 +1,5 @@
 {
-  // TODO: confirmar si queremos user o walled.deletion
-  "topic": "user.deletion.response",
+  "topic": "wallet.deletion.response",
   "data": {
     "traceData" : {
       "originModule" : "module-name", // Módulo que hizo el pedido

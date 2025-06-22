@@ -1,5 +1,5 @@
-{ // TODO: confirmar si queremos user o walled.deletion
-  "topic": "user.deletion.request",
+{
+  "topic": "wallet.deletion.request",
   "data": {
     // Este objeto lo repetimos en la response para que nuestros consumidores sepan a quién le respondimos y a qué pedido
     "traceData" : {

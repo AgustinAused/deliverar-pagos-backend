@@ -1,6 +1,5 @@
 {
-  // TODO: confirmar si queremos user o walled.creation
-  "topic": "user.creation.response",
+  "topic": "wallet.creation.response",
   "data": {
     "traceData" : {
       "originModule" : "module-name", // Módulo que hizo el pedido
