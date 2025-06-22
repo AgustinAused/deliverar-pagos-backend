@@ -12,6 +12,11 @@ public abstract class Event {
     private String eventId;
     private LocalDateTime timestamp;
 
+    public Event() {
+        this.eventId = java.util.UUID.randomUUID().toString();
+        this.timestamp = LocalDateTime.now();
+    }
+
     public Event(String topic, Map<String, Object> data) {
         this.topic = topic;
         this.data = data;

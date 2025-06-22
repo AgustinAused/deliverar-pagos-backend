@@ -21,7 +21,7 @@ public class CommandManager {
 
     public CommandResult executeCommand(IncomingEvent event) {
         try {
-            EventType eventType = EventType.valueOf(event.getTopic());
+            EventType eventType = EventType.fromTopic(event.getTopic());
             Command command = findCommand(eventType);
 
             if (command == null) {

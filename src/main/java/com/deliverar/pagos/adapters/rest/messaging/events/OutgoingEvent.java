@@ -11,21 +11,28 @@ public class OutgoingEvent extends Event {
     private String correlationId;
     private String target;
     private EventStatus status;
-    
+
     public OutgoingEvent(String topic, Map<String, Object> data, String correlationId, String target, EventStatus status) {
         super(topic, data);
         this.correlationId = correlationId;
         this.target = target;
         this.status = status;
     }
-    
+
     public static OutgoingEvent buildResponse(IncomingEvent incomingEvent, EventType responseType, Object data, EventStatus status) {
+        Map<String, Object> eventData;
+        if (data instanceof Map) {
+            eventData = (Map<String, Object>) data;
+        } else {
+            eventData = Map.of("value", data);
+        }
+        
         return new OutgoingEvent(
-            responseType.name(),
-            Map.of("data", data),
-            incomingEvent.getCorrelationId(),
-            incomingEvent.getSource(),
-            status
+                responseType.getTopic(),
+                eventData,
+                incomingEvent.getCorrelationId(),
+                incomingEvent.getSource(),
+                status
         );
     }
 } 

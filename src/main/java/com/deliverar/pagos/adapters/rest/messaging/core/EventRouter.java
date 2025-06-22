@@ -21,7 +21,7 @@ public class EventRouter {
 
     public void routeEvent(IncomingEvent event) {
         try {
-            EventType eventType = EventType.valueOf(event.getTopic());
+            EventType eventType = EventType.fromTopic(event.getTopic());
 
             if (!event.validate()) {
                 log.error("Invalid event received: {}", event);

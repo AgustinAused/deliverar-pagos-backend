@@ -1,34 +1,30 @@
-@startuml Event Class Structure
+@startuml Event-Driven Architecture Class Diagram
 
-!theme plain
-skinparam backgroundColor #FFFFFF
+!define RECTANGLE class
 
 package "Events" {
     abstract class Event {
         +String topic
         +Map<String, Object> data
-        +String eventId
-        +LocalDateTime timestamp
-        +getTopic(): String
-        +getData(): Map<String, Object>
+        +Instant timestamp
     }
     
     class IncomingEvent {
-        +String correlationId
         +String source
-        +validate(): boolean
+        +String correlationId
     }
     
     class OutgoingEvent {
-        +String correlationId
-        +String target
+        +String destination
         +EventStatus status
-        +buildResponse(): OutgoingEvent
+        +String errorMessage
     }
     
     enum EventType {
         USER_CREATION_REQUEST("user.creation.request")
         USER_DELETION_REQUEST("user.deletion.request")
+        WALLET_CREATION_REQUEST("wallet.creation.request")
+        WALLET_DELETION_REQUEST("wallet.deletion.request")
         GET_BALANCES_REQUEST("get.balances.request")
         GET_USER_FIAT_TRANSACTIONS_REQUEST("get.user.fiat.transactions.request")
         GET_USER_CRYPTO_TRANSACTIONS_REQUEST("get.user.crypto.transactions.request")
@@ -40,8 +36,11 @@ package "Events" {
         SELL_CRYPTO_REQUEST("sell.crypto.request")
         GET_ALL_FIAT_TRANSACTIONS_REQUEST("get.all.fiat.transactions.request")
         GET_ALL_CRYPTO_TRANSACTIONS_REQUEST("get.all.crypto.transactions.request")
+        
         USER_CREATION_RESPONSE("user.creation.response")
         USER_DELETION_RESPONSE("user.deletion.response")
+        WALLET_CREATION_RESPONSE("wallet.creation.response")
+        WALLET_DELETION_RESPONSE("wallet.deletion.response")
         GET_BALANCES_RESPONSE("get.balances.response")
         GET_USER_FIAT_TRANSACTIONS_RESPONSE("get.user.fiat.transactions.response")
         GET_USER_CRYPTO_TRANSACTIONS_RESPONSE("get.user.crypto.transactions.response")
@@ -84,13 +83,23 @@ package "Commands" {
         +process(IncomingEvent): CommandResult
     }
     
-    class CreateUserCommand {
+    class UserCreationCommand {
         -CreateUser createUserUseCase
         +process(IncomingEvent): CommandResult
     }
     
-    class DeleteUserCommand {
+    class UserDeletionCommand {
         -DeleteUser deleteUserUseCase
+        +process(IncomingEvent): CommandResult
+    }
+    
+    class WalletCreationCommand {
+        -CreateOwner createOwnerUseCase
+        +process(IncomingEvent): CommandResult
+    }
+    
+    class WalletDeletionCommand {
+        -OwnerRepository ownerRepository
         +process(IncomingEvent): CommandResult
     }
     
@@ -193,8 +202,10 @@ EventType --> Event
 EventStatus --> OutgoingEvent
 
 Command <|.. BaseCommand
-BaseCommand <|-- CreateUserCommand
-BaseCommand <|-- DeleteUserCommand
+BaseCommand <|-- UserCreationCommand
+BaseCommand <|-- UserDeletionCommand
+BaseCommand <|-- WalletCreationCommand
+BaseCommand <|-- WalletDeletionCommand
 BaseCommand <|-- GetBalancesCommand
 BaseCommand <|-- GetUserFiatTransactionsCommand
 BaseCommand <|-- GetUserCryptoTransactionsCommand

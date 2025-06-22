@@ -53,10 +53,18 @@ public class UserCreationCommand extends BaseCommand {
             // Create user using the use case
             User user = createUserUseCase.create(name, email, encodedPassword, role);
             
-            // Build response
-            CreateUserResponse response = CreateUserResponse.builder()
-                .id(user.getId())
-                .build();
+            // Build response as Map
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("id", user.getId().toString());
+            response.put("name", user.getName());
+            response.put("email", user.getEmail());
+            response.put("role", user.getRole().name());
+            response.put("createdAt", user.getCreatedAt());
+            
+            // Add traceData if present in the request
+            if (data.containsKey("traceData")) {
+                response.put("traceData", data.get("traceData"));
+            }
             
             return CommandResult.buildSuccess(response, "User created successfully");
             

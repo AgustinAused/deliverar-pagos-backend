@@ -59,7 +59,8 @@ public class DefaultEventHandler implements EventHandler {
     }
 
     private EventType getResponseType(String requestTopic) {
-        return EventType.valueOf(requestTopic.replace("_REQUEST", "_RESPONSE"));
+        String responseTopic = requestTopic.replace(".request", ".response");
+        return EventType.fromTopic(responseTopic);
     }
 
     @Override

@@ -1,9 +1,17 @@
 package com.deliverar.pagos.adapters.rest.messaging.events;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public enum EventType {
     // Eventos de Entrada
     USER_CREATION_REQUEST("user.creation.request"),
     USER_DELETION_REQUEST("user.deletion.request"),
+    WALLET_CREATION_REQUEST("wallet.creation.request"),
+    WALLET_DELETION_REQUEST("wallet.deletion.request"),
     GET_BALANCES_REQUEST("get.balances.request"),
     GET_USER_FIAT_TRANSACTIONS_REQUEST("get.user.fiat.transactions.request"),
     GET_USER_CRYPTO_TRANSACTIONS_REQUEST("get.user.crypto.transactions.request"),
@@ -15,10 +23,12 @@ public enum EventType {
     SELL_CRYPTO_REQUEST("sell.crypto.request"),
     GET_ALL_FIAT_TRANSACTIONS_REQUEST("get.all.fiat.transactions.request"),
     GET_ALL_CRYPTO_TRANSACTIONS_REQUEST("get.all.crypto.transactions.request"),
-    
+
     // Eventos de Salida
     USER_CREATION_RESPONSE("user.creation.response"),
     USER_DELETION_RESPONSE("user.deletion.response"),
+    WALLET_CREATION_RESPONSE("wallet.creation.response"),
+    WALLET_DELETION_RESPONSE("wallet.deletion.response"),
     GET_BALANCES_RESPONSE("get.balances.response"),
     GET_USER_FIAT_TRANSACTIONS_RESPONSE("get.user.fiat.transactions.response"),
     GET_USER_CRYPTO_TRANSACTIONS_RESPONSE("get.user.crypto.transactions.response"),
@@ -31,17 +41,9 @@ public enum EventType {
     GET_ALL_FIAT_TRANSACTIONS_RESPONSE("get.all.fiat.transactions.response"),
     GET_ALL_CRYPTO_TRANSACTIONS_RESPONSE("get.all.crypto.transactions.response"),
     ERROR_RESPONSE("error.response");
-    
+
     private final String topic;
-    
-    EventType(String topic) {
-        this.topic = topic;
-    }
-    
-    public String getTopic() {
-        return topic;
-    }
-    
+
     public static EventType fromTopic(String topic) {
         for (EventType eventType : values()) {
             if (eventType.topic.equals(topic)) {

@@ -550,3 +550,303 @@ private String generateCorrelationId() {
 3. **Testabilidad**: Cada componente puede ser testeado independientemente
 4. **Mantenibilidad**: Lógica clara y separada por responsabilidades
 5. **Escalabilidad**: Comandos pueden ser ejecutados de forma asíncrona si es necesario
+
+## 9. Comandos de Usuario
+
+### UserCreationCommand.java
+
+```java
+package com.deliverar.pagos.adapters.rest.messaging.commands.strategies;
+
+import com.deliverar.pagos.adapters.rest.messaging.commands.BaseCommand;
+import com.deliverar.pagos.adapters.rest.messaging.commands.CommandResult;
+import com.deliverar.pagos.adapters.rest.messaging.events.EventType;
+import com.deliverar.pagos.adapters.rest.messaging.events.IncomingEvent;
+import com.deliverar.pagos.domain.dtos.CreateUserResponse;
+import com.deliverar.pagos.domain.entities.Role;
+import com.deliverar.pagos.domain.entities.User;
+import com.deliverar.pagos.domain.usecases.user.CreateUser;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
+import java.util.Map;
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class UserCreationCommand extends BaseCommand {
+
+    private final CreateUser createUserUseCase;
+    private final PasswordEncoder passwordEncoder;
+
+    @Override
+    public boolean canHandle(EventType eventType) {
+        return EventType.USER_CREATION_REQUEST.equals(eventType);
+    }
+
+    @Override
+    protected boolean validate(IncomingEvent event) {
+        Map<String, Object> data = event.getData();
+        return data != null &&
+               data.containsKey("name") &&
+               data.containsKey("email") &&
+               data.containsKey("password");
+    }
+
+    @Override
+    protected CommandResult process(IncomingEvent event) {
+        try {
+            Map<String, Object> data = event.getData();
+
+            String name = (String) data.get("name");
+            String email = (String) data.get("email");
+            String password = (String) data.get("password");
+            Role role = data.containsKey("role") ? Role.valueOf((String) data.get("role")) : Role.CORE;
+
+            // Encode password
+            String encodedPassword = passwordEncoder.encode(password);
+
+            // Create user using the use case
+            User user = createUserUseCase.create(name, email, encodedPassword, role);
+
+            // Build response
+            CreateUserResponse response = CreateUserResponse.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .createdAt(user.getCreatedAt())
+                .build();
+
+            return CommandResult.buildSuccess(response, "User created successfully");
+
+        } catch (Exception e) {
+            log.error("Error processing user creation command", e);
+            return CommandResult.buildFailure("Failed to create user: " + e.getMessage());
+        }
+    }
+}
+```
+
+### UserDeletionCommand.java
+
+```java
+package com.deliverar.pagos.adapters.rest.messaging.commands.strategies;
+
+import com.deliverar.pagos.adapters.rest.messaging.commands.BaseCommand;
+import com.deliverar.pagos.adapters.rest.messaging.commands.CommandResult;
+import com.deliverar.pagos.adapters.rest.messaging.events.EventType;
+import com.deliverar.pagos.adapters.rest.messaging.events.IncomingEvent;
+import com.deliverar.pagos.domain.usecases.user.DeleteUser;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+import java.util.Map;
+import java.util.UUID;
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class UserDeletionCommand extends BaseCommand {
+
+    private final DeleteUser deleteUserUseCase;
+
+    @Override
+    public boolean canHandle(EventType eventType) {
+        return EventType.USER_DELETION_REQUEST.equals(eventType);
+    }
+
+    @Override
+    protected boolean validate(IncomingEvent event) {
+        Map<String, Object> data = event.getData();
+        return data != null && data.containsKey("id");
+    }
+
+    @Override
+    protected CommandResult process(IncomingEvent event) {
+        try {
+            Map<String, Object> data = event.getData();
+            UUID userId = UUID.fromString((String) data.get("id"));
+
+            deleteUserUseCase.delete(userId);
+
+            return CommandResult.buildSuccess(Map.of(
+                "id", userId.toString(),
+                "deletedAt", java.time.Instant.now()
+            ), "User deleted successfully");
+
+        } catch (Exception e) {
+            log.error("Error processing user deletion command", e);
+            return CommandResult.buildFailure("Failed to delete user: " + e.getMessage());
+        }
+    }
+}
+```
+
+## 10. Comandos de Wallet
+
+### WalletCreationCommand.java
+
+```java
+package com.deliverar.pagos.adapters.rest.messaging.commands.strategies;
+
+import com.deliverar.pagos.adapters.rest.messaging.commands.BaseCommand;
+import com.deliverar.pagos.adapters.rest.messaging.commands.CommandResult;
+import com.deliverar.pagos.adapters.rest.messaging.events.EventType;
+import com.deliverar.pagos.adapters.rest.messaging.events.IncomingEvent;
+import com.deliverar.pagos.domain.entities.Owner;
+import com.deliverar.pagos.domain.entities.OwnerType;
+import com.deliverar.pagos.domain.usecases.owner.CreateOwner;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Map;
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class WalletCreationCommand extends BaseCommand {
+
+    private final CreateOwner createOwnerUseCase;
+
+    @Override
+    public boolean canHandle(EventType eventType) {
+        return EventType.WALLET_CREATION_REQUEST.equals(eventType);
+    }
+
+    @Override
+    protected boolean validate(IncomingEvent event) {
+        Map<String, Object> data = event.getData();
+        return data != null &&
+               data.containsKey("name") &&
+               data.containsKey("email") &&
+               data.containsKey("initial_fiat_balance") &&
+               data.containsKey("initial_crypto_balance");
+    }
+
+    @Override
+    protected CommandResult process(IncomingEvent event) {
+        try {
+            Map<String, Object> data = event.getData();
+
+            String name = (String) data.get("name");
+            String email = (String) data.get("email");
+            BigDecimal initialFiatBalance = new BigDecimal(data.get("initial_fiat_balance").toString());
+            BigDecimal initialCryptoBalance = new BigDecimal(data.get("initial_crypto_balance").toString());
+
+            // Create owner with wallet using the use case
+            Owner owner = createOwnerUseCase.create(name, email, OwnerType.NATURAL);
+
+            // Set initial balances
+            owner.getWallet().setFiatBalance(initialFiatBalance);
+            owner.getWallet().setCryptoBalance(initialCryptoBalance);
+            owner.getWallet().setUpdatedAt(Instant.now());
+
+            // Build response with traceData if present
+            Map<String, Object> responseData = Map.of(
+                "name", owner.getName(),
+                "email", owner.getEmail(),
+                "createdAt", owner.getWallet().getCreatedAt()
+            );
+
+            // Add traceData if present in the request
+            if (data.containsKey("traceData")) {
+                responseData = Map.of(
+                    "traceData", data.get("traceData"),
+                    "name", owner.getName(),
+                    "email", owner.getEmail(),
+                    "createdAt", owner.getWallet().getCreatedAt()
+                );
+            }
+
+            return CommandResult.buildSuccess(responseData, "Wallet created successfully");
+
+        } catch (Exception e) {
+            log.error("Error processing wallet creation command", e);
+            return CommandResult.buildFailure("Failed to create wallet: " + e.getMessage());
+        }
+    }
+}
+```
+
+### WalletDeletionCommand.java
+
+```java
+package com.deliverar.pagos.adapters.rest.messaging.commands.strategies;
+
+import com.deliverar.pagos.adapters.rest.messaging.commands.BaseCommand;
+import com.deliverar.pagos.adapters.rest.messaging.commands.CommandResult;
+import com.deliverar.pagos.adapters.rest.messaging.events.EventType;
+import com.deliverar.pagos.adapters.rest.messaging.events.IncomingEvent;
+import com.deliverar.pagos.domain.repositories.OwnerRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+import java.util.Map;
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class WalletDeletionCommand extends BaseCommand {
+
+    private final OwnerRepository ownerRepository;
+
+    @Override
+    public boolean canHandle(EventType eventType) {
+        return EventType.WALLET_DELETION_REQUEST.equals(eventType);
+    }
+
+    @Override
+    protected boolean validate(IncomingEvent event) {
+        Map<String, Object> data = event.getData();
+        return data != null && data.containsKey("email");
+    }
+
+    @Override
+    protected CommandResult process(IncomingEvent event) {
+        try {
+            Map<String, Object> data = event.getData();
+            String email = (String) data.get("email");
+
+            // Find owner by email
+            var ownerOptional = ownerRepository.findByEmail(email);
+            if (ownerOptional.isEmpty()) {
+                return CommandResult.buildFailure("Owner not found with email: " + email);
+            }
+
+            var owner = ownerOptional.get();
+
+            // Delete the owner (which will cascade to delete the wallet)
+            ownerRepository.delete(owner);
+
+            // Build response with traceData if present
+            Map<String, Object> responseData = Map.of(
+                "email", email,
+                "deletedAt", java.time.Instant.now()
+            );
+
+            // Add traceData if present in the request
+            if (data.containsKey("traceData")) {
+                responseData = Map.of(
+                    "traceData", data.get("traceData"),
+                    "email", email,
+                    "deletedAt", java.time.Instant.now()
+                );
+            }
+
+            return CommandResult.buildSuccess(responseData, "Wallet deleted successfully");
+
+        } catch (Exception e) {
+            log.error("Error processing wallet deletion command", e);
+            return CommandResult.buildFailure("Failed to delete wallet: " + e.getMessage());
+        }
+    }
+}
+```
