@@ -1,0 +1,11 @@
+{
+  "topic": "fiat.deposit.response",
+  "data": {
+    "transactionId": "550e8400-e29b-41d4-a716-446655440003",
+    "email": "juan.perez@example.com",
+    "amount": "5000.00",
+    "concept": "Depósito bancario",
+    "status": "SUCCESS",
+    "transactionDate": "2024-01-15T10:30:00Z"
+  }
+}

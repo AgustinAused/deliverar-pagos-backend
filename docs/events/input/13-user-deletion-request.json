@@ -1,0 +1,6 @@
+{
+  "topic": "user.deletion.request",
+  "data": {
+    "email": "juan.perez@example.com"
+  }
+}

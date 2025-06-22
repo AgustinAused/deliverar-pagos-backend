@@ -1,0 +1,8 @@
+{
+  "topic": "fiat.deposit.request",
+  "data": {
+    "email": "juan.perez@example.com",
+    "amount": "5000.00",
+    "concept": "Depósito bancario"
+  }
+}

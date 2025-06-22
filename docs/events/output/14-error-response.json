@@ -1,0 +1,9 @@
+{
+  "topic": "error.response",
+  "data": {
+    "errorCode": "VALIDATION_ERROR",
+    "message": "Los datos proporcionados no son válidos",
+    "details": ["El email es requerido"],
+    "timestamp": "2024-01-15T10:30:00Z"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "topic": "get.all.fiat.transactions.request",
+  "data": {
+    "page": 0,
+    "size": 20,
+    "sortBy": "transactionDate",
+    "sortDirection": "DESC"
+  }
+}

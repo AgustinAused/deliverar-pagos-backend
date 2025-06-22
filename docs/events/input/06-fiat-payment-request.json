@@ -1,0 +1,9 @@
+{
+  "topic": "fiat.payment.request",
+  "data": {
+    "fromEmail": "juan.perez@example.com",
+    "toEmail": "maria.garcia@example.com",
+    "amount": "250.00",
+    "concept": "Pago de factura"
+  }
+}

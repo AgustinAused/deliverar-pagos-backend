@@ -1,0 +1,6 @@
+{
+  "topic": "get.balances.request",
+  "data": {
+    "email": "juan.perez@example.com"
+  }
+}

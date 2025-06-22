@@ -1,0 +1,12 @@
+{
+  "topic": "sell.crypto.response",
+  "data": {
+    "transactionId": "550e8400-e29b-41d4-a716-446655440009",
+    "email": "juan.perez@example.com",
+    "cryptoAmount": "25.00",
+    "fiatAmount": "500.00",
+    "status": "PENDING",
+    "blockchainTxHash": "0x9876543210fedcba...",
+    "transactionDate": "2024-01-15T10:30:00Z"
+  }
+}

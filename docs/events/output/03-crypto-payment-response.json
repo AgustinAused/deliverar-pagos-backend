@@ -1,0 +1,13 @@
+{
+  "topic": "crypto.payment.response",
+  "data": {
+    "transactionId": "550e8400-e29b-41d4-a716-446655440001",
+    "fromEmail": "juan.perez@example.com",
+    "toEmail": "maria.garcia@example.com",
+    "amount": "100.50",
+    "concept": "Pago por servicios",
+    "status": "PENDING",
+    "blockchainTxHash": "0x1234567890abcdef...",
+    "transactionDate": "2024-01-15T10:30:00Z"
+  }
+}

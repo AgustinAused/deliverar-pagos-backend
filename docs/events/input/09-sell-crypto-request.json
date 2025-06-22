@@ -1,0 +1,8 @@
+{
+  "topic": "sell.crypto.request",
+  "data": {
+    "email": "juan.perez@example.com",
+    "amount": "25.00",
+    "fiatAmount": "500.00"
+  }
+}
