@@ -42,7 +42,7 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           OWNER_MAIL: ${{ secrets.OWNER_ADDRESS }}
           OWNER_NAME: ${{ secrets.OWNER_NAME }}
-          HUB_HOST: ${{ secrets.HUB_HOST }}
+          HUB_URL: ${{ secrets.HUB_URL }}
           HUB_USER: ${{ secrets.HUB_USER }}
           HUB_PASSWORD: ${{ secrets.HUB_PASSWORD }}
         run: |
@@ -89,7 +89,7 @@ jobs:
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           OWNER_MAIL=${{ secrets.OWNER_MAIL }}
           OWNER_NAME=${{ secrets.OWNER_NAME }}
-          HUB_HOST: ${{ secrets.HUB_HOST }}
+          HUB_URL: ${{ secrets.HUB_URL }}
           HUB_USER: ${{ secrets.HUB_USER }}
           HUB_PASSWORD: ${{ secrets.HUB_PASSWORD }}
           EOF
