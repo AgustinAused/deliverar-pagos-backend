@@ -16,6 +16,9 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.StaticGasProvider;
+import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -26,10 +29,14 @@ import java.util.concurrent.CompletableFuture;
 import static com.deliverar.pagos.adapters.crypto.service.AmountConverter.toDecimal;
 import static com.deliverar.pagos.adapters.crypto.service.AmountConverter.toInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 @RequiredArgsConstructor
 public class DeliverCoinService {
+
+    private static final Logger log = LoggerFactory.getLogger(DeliverCoinService.class);
 
     @Value("${wallet.private.key}")
     private String privateKey;
@@ -46,6 +53,9 @@ public class DeliverCoinService {
     private final UserRepository userRepository;
     @Value("${app.bootstrap.owner.email}")
     private String ownerEmail;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @PostConstruct
     public void init() {
@@ -71,29 +81,36 @@ public class DeliverCoinService {
         fromOwner.getWallet().setCryptoBalance(fromOwnerBalance.subtract(request.getAmount()));
         toOwner.getWallet().setCryptoBalance(toOwner.getWallet().getCryptoBalance().add(request.getAmount()));
 
-        Transaction tx = new Transaction();
-        tx.setId(UUID.randomUUID());
-        tx.setOriginOwner(fromOwner);
-        tx.setDestinationOwner(toOwner);
-        tx.setAmount(request.getAmount());
-        tx.setCurrency(CurrencyType.CRYPTO);
-        tx.setConversionRate(BigDecimal.ONE);
-        tx.setConcept("TRANSFER");
-        tx.setStatus(TransactionStatus.PENDING);
-        tx.setTransactionDate(Instant.now());
-        tx.setCreatedAt(Instant.now());
+        // Create transaction - let JPA handle timestamps automatically
+        Transaction tx = Transaction.builder()
+                .id(UUID.randomUUID())
+                .originOwner(fromOwner)
+                .destinationOwner(toOwner)
+                .amount(request.getAmount())
+                .currency(CurrencyType.CRYPTO)
+                .conversionRate(BigDecimal.ONE)
+                .concept("TRANSFER")
+                .status(TransactionStatus.PENDING)
+                .transactionDate(Instant.now())
+                .build();
 
         transactionRepository.save(tx);
 
         CompletableFuture.runAsync(() -> {
             try {
+                log.info("Starting async blockchain transaction for transfer, transaction ID: {}", tx.getId());
                 TransactionReceipt receipt = deliverCoin
                         .transfer(request.getFromEmail(), request.getToEmail(), toInteger(request.getAmount()))
                         .send();
+                log.info("Blockchain transaction successful for transfer, transaction ID: {}, hash: {}", tx.getId(), receipt.getTransactionHash());
 
-                tx.setStatus(TransactionStatus.SUCCESS);
-                tx.setBlockchainTxHash(receipt.getTransactionHash());
-                transactionRepository.save(tx);
+                // Reload transaction from database to avoid concurrency issues
+                Transaction updatedTx = transactionRepository.findById(tx.getId()).orElseThrow();
+                updatedTx.setStatus(TransactionStatus.SUCCESS);
+                updatedTx.setBlockchainTxHash(receipt.getTransactionHash());
+                transactionRepository.save(updatedTx);
+                log.info("Transaction status updated to SUCCESS for ID: {}", tx.getId());
+                
                 ownerRepository.save(fromOwner);
                 ownerRepository.save(toOwner);
 
@@ -102,8 +119,12 @@ public class DeliverCoinService {
                 syncBalance(request.getToEmail());
 
             } catch (Exception e) {
-                tx.setStatus(TransactionStatus.FAILURE);
-                transactionRepository.save(tx);
+                log.error("Error in async blockchain transaction for transfer, transaction ID: {}", tx.getId(), e);
+                // Reload transaction from database to avoid concurrency issues
+                Transaction updatedTx = transactionRepository.findById(tx.getId()).orElseThrow();
+                updatedTx.setStatus(TransactionStatus.FAILURE);
+                transactionRepository.save(updatedTx);
+                log.info("Transaction status updated to FAILURE for ID: {}", tx.getId());
             }
         });
 
@@ -132,27 +153,34 @@ public class DeliverCoinService {
         ownerAdmin.getWallet().setCryptoBalance(ownerAdmin.getWallet().getCryptoBalance().subtract(cryptoAmount));
         buyer.getWallet().setCryptoBalance(buyer.getWallet().getCryptoBalance().add(cryptoAmount));
 
-        // Create transaction records
-        Transaction tx = new Transaction();
-        tx.setId(UUID.randomUUID());
-        tx.setOriginOwner(ownerAdmin);
-        tx.setDestinationOwner(buyer);
-        tx.setAmount(cryptoAmount);
-        tx.setCurrency(CurrencyType.CRYPTO);
-        tx.setConversionRate(BigDecimal.ONE);
-        tx.setConcept("BUY_CRYPTO");
-        tx.setStatus(TransactionStatus.PENDING);
-        tx.setTransactionDate(Instant.now());
-        tx.setCreatedAt(Instant.now());
+        // Create transaction records - let JPA handle timestamps automatically
+        Transaction tx = Transaction.builder()
+                .id(UUID.randomUUID())
+                .originOwner(ownerAdmin)
+                .destinationOwner(buyer)
+                .amount(cryptoAmount)
+                .currency(CurrencyType.CRYPTO)
+                .conversionRate(BigDecimal.ONE)
+                .concept("BUY_CRYPTO")
+                .status(TransactionStatus.PENDING)
+                .transactionDate(Instant.now())
+                .build();
 
         transactionRepository.save(tx);
 
         CompletableFuture.runAsync(() -> {
             try {
+                log.info("Starting async blockchain transaction for buy crypto, transaction ID: {}", tx.getId());
                 TransactionReceipt receipt = deliverCoin.transfer(ownerEmail, email, toInteger(cryptoAmount)).send();
-                tx.setStatus(TransactionStatus.SUCCESS);
-                tx.setBlockchainTxHash(receipt.getTransactionHash());
-                transactionRepository.save(tx);
+                log.info("Blockchain transaction successful for buy crypto, transaction ID: {}, hash: {}", tx.getId(), receipt.getTransactionHash());
+                
+                // Reload transaction from database to avoid concurrency issues
+                Transaction updatedTx = transactionRepository.findById(tx.getId()).orElseThrow();
+                updatedTx.setStatus(TransactionStatus.SUCCESS);
+                updatedTx.setBlockchainTxHash(receipt.getTransactionHash());
+                transactionRepository.save(updatedTx);
+                log.info("Transaction status updated to SUCCESS for ID: {}", tx.getId());
+                
                 ownerRepository.save(ownerAdmin);
                 ownerRepository.save(buyer);
 
@@ -161,8 +189,13 @@ public class DeliverCoinService {
                 syncBalance(ownerEmail);
 
             } catch (Exception e) {
-                tx.setStatus(TransactionStatus.FAILURE);
-                transactionRepository.save(tx);
+                log.error("Error in async blockchain transaction for buy crypto, transaction ID: {}", tx.getId(), e);
+                // Reload transaction from database to avoid concurrency issues
+                Transaction updatedTx = transactionRepository.findById(tx.getId()).orElseThrow();
+                updatedTx.setStatus(TransactionStatus.FAILURE);
+                transactionRepository.save(updatedTx);
+                log.info("Transaction status updated to FAILURE for ID: {}", tx.getId());
+                
                 // Revert changes in case of failure
                 buyer.getWallet().setFiatBalance(buyer.getWallet().getFiatBalance().add(cryptoAmount));
                 buyer.getWallet().setCryptoBalance(buyer.getWallet().getCryptoBalance().subtract(cryptoAmount));
@@ -190,27 +223,34 @@ public class DeliverCoinService {
         // Add fiat to seller's wallet (1:1 conversion rate)
         seller.getWallet().setFiatBalance(seller.getWallet().getFiatBalance().add(cryptoAmount));
 
-        // Create transaction record
-        Transaction tx = new Transaction();
-        tx.setId(UUID.randomUUID());
-        tx.setOriginOwner(seller);
-        tx.setDestinationOwner(ownerAdmin);
-        tx.setAmount(cryptoAmount);
-        tx.setCurrency(CurrencyType.CRYPTO);
-        tx.setConversionRate(BigDecimal.ONE);
-        tx.setConcept("SELL_CRYPTO");
-        tx.setStatus(TransactionStatus.PENDING);
-        tx.setTransactionDate(Instant.now());
-        tx.setCreatedAt(Instant.now());
+        // Create transaction record - let JPA handle timestamps automatically
+        Transaction tx = Transaction.builder()
+                .id(UUID.randomUUID())
+                .originOwner(seller)
+                .destinationOwner(ownerAdmin)
+                .amount(cryptoAmount)
+                .currency(CurrencyType.CRYPTO)
+                .conversionRate(BigDecimal.ONE)
+                .concept("SELL_CRYPTO")
+                .status(TransactionStatus.PENDING)
+                .transactionDate(Instant.now())
+                .build();
 
         transactionRepository.save(tx);
 
         CompletableFuture.runAsync(() -> {
             try {
+                log.info("Starting async blockchain transaction for sell crypto, transaction ID: {}", tx.getId());
                 TransactionReceipt receipt = deliverCoin.transfer(email, ownerEmail, toInteger(cryptoAmount)).send();
-                tx.setStatus(TransactionStatus.SUCCESS);
-                tx.setBlockchainTxHash(receipt.getTransactionHash());
-                transactionRepository.save(tx);
+                log.info("Blockchain transaction successful for sell crypto, transaction ID: {}, hash: {}", tx.getId(), receipt.getTransactionHash());
+                
+                // Reload transaction from database to avoid concurrency issues
+                Transaction updatedTx = transactionRepository.findById(tx.getId()).orElseThrow();
+                updatedTx.setStatus(TransactionStatus.SUCCESS);
+                updatedTx.setBlockchainTxHash(receipt.getTransactionHash());
+                transactionRepository.save(updatedTx);
+                log.info("Transaction status updated to SUCCESS for ID: {}", tx.getId());
+                
                 ownerRepository.save(seller);
                 ownerRepository.save(ownerAdmin);
 
@@ -219,8 +259,13 @@ public class DeliverCoinService {
                 syncBalance(ownerEmail);
 
             } catch (Exception e) {
-                tx.setStatus(TransactionStatus.FAILURE);
-                transactionRepository.save(tx);
+                log.error("Error in async blockchain transaction for sell crypto, transaction ID: {}", tx.getId(), e);
+                // Reload transaction from database to avoid concurrency issues
+                Transaction updatedTx = transactionRepository.findById(tx.getId()).orElseThrow();
+                updatedTx.setStatus(TransactionStatus.FAILURE);
+                transactionRepository.save(updatedTx);
+                log.info("Transaction status updated to FAILURE for ID: {}", tx.getId());
+                
                 // Revert changes in case of failure
                 seller.getWallet().setCryptoBalance(seller.getWallet().getCryptoBalance().add(cryptoAmount));
                 seller.getWallet().setFiatBalance(seller.getWallet().getFiatBalance().subtract(cryptoAmount));
@@ -243,8 +288,16 @@ public class DeliverCoinService {
                 .getEmail();
     }
 
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
     public Transaction getTransferStatus(UUID trackingId) {
-        return transactionRepository.findById(trackingId).orElseThrow();
+        // Clear persistence context to force fresh read from database
+        entityManager.clear();
+        
+        // Force a fresh read from database to avoid JPA caching issues
+        Transaction transaction = transactionRepository.findById(trackingId)
+                .orElseThrow(() -> new RuntimeException("Transaction not found: " + trackingId));
+        log.debug("Retrieved transaction status for ID {}: {}", trackingId, transaction.getStatus());
+        return transaction;
     }
 
     public TransactionReceipt mint(BigDecimal amount) throws Exception {
