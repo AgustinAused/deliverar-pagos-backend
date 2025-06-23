@@ -80,7 +80,13 @@ public class OwnerController {
     @ResponseStatus(HttpStatus.CREATED)
     public CreateOwnerResponse create(@RequestBody CreateOwnerRequest request) {
         log.info("Create owner request: {}", request);
-        Owner owner = createOwner.create(request.getName(), request.getEmail().toLowerCase(), request.getOwnerType());
+        Owner owner = createOwner.create(
+            request.getName(), 
+            request.getEmail().toLowerCase(), 
+            request.getOwnerType(),
+            BigDecimal.ZERO, // Default initial fiat balance
+            BigDecimal.ZERO  // Default initial crypto balance
+        );
         return CreateOwnerResponse.builder().id(owner.getId()).build();
     }
 

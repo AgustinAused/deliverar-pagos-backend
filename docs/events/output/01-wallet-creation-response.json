@@ -1,9 +1,9 @@
 {
   "topic": "wallet.creation.response",
   "data": {
-    "traceData" : {
-      "originModule" : "module-name", // Módulo que hizo el pedido
-      "traceId" : "xxx"  // El id que ellos usan para identificar su propio pedido
+    "traceData": {
+      "originModule": "module-name", // Módulo que hizo el pedido
+      "traceId": "xxx" // El id que ellos usan para identificar su propio pedido
     },
     "name": "Juan Pérez",
     "email": "juan.perez@example.com",

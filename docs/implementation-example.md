@@ -726,8 +726,8 @@ public class WalletCreationCommand extends BaseCommand {
         return data != null &&
                data.containsKey("name") &&
                data.containsKey("email") &&
-               data.containsKey("initial_fiat_balance") &&
-               data.containsKey("initial_crypto_balance");
+               data.containsKey("initialFiatBalance") &&
+               data.containsKey("initialCryptoBalance");
     }
 
     @Override
@@ -737,8 +737,8 @@ public class WalletCreationCommand extends BaseCommand {
 
             String name = (String) data.get("name");
             String email = (String) data.get("email");
-            BigDecimal initialFiatBalance = new BigDecimal(data.get("initial_fiat_balance").toString());
-            BigDecimal initialCryptoBalance = new BigDecimal(data.get("initial_crypto_balance").toString());
+            BigDecimal initialFiatBalance = new BigDecimal(data.get("initialFiatBalance").toString());
+            BigDecimal initialCryptoBalance = new BigDecimal(data.get("initialCryptoBalance").toString());
 
             // Create owner with wallet using the use case
             Owner owner = createOwnerUseCase.create(name, email, OwnerType.NATURAL);

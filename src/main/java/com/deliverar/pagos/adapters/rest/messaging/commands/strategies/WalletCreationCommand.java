@@ -2,6 +2,7 @@ package com.deliverar.pagos.adapters.rest.messaging.commands.strategies;
 
 import com.deliverar.pagos.adapters.rest.messaging.commands.BaseCommand;
 import com.deliverar.pagos.adapters.rest.messaging.commands.CommandResult;
+import com.deliverar.pagos.adapters.rest.messaging.commands.utils.OwnerTypeUtils;
 import com.deliverar.pagos.adapters.rest.messaging.events.EventType;
 import com.deliverar.pagos.adapters.rest.messaging.events.IncomingEvent;
 import com.deliverar.pagos.domain.entities.Owner;
@@ -43,29 +44,28 @@ public class WalletCreationCommand extends BaseCommand {
             String name = (String) data.get("name");
             String email = (String) data.get("email");
 
+            // Determine owner type based on origin module
+            OwnerType ownerType = OwnerTypeUtils.determineOwnerType(data);
+            log.info("Creating owner with type: {} for email: {}", ownerType, email);
+
             BigDecimal initialFiatBalance = BigDecimal.ZERO;
             BigDecimal initialCryptoBalance = BigDecimal.ZERO;
 
-            if (data.containsKey("initial_fiat_balance")) {
-                initialFiatBalance = new BigDecimal(data.get("initial_fiat_balance").toString());
+            if (data.containsKey("initialFiatBalance")) {
+                initialFiatBalance = new BigDecimal(data.get("initialFiatBalance").toString());
             }
-            if (data.containsKey("initial_crypto_balance")) {
-                initialCryptoBalance = new BigDecimal(data.get("initial_crypto_balance").toString());
+            if (data.containsKey("initialCryptoBalance")) {
+                initialCryptoBalance = new BigDecimal(data.get("initialCryptoBalance").toString());
             }
 
             // Create owner with wallet using the use case
-            Owner owner = createOwnerUseCase.create(name, email, OwnerType.NATURAL);
-
-            // Set initial balances
-            owner.getWallet().setFiatBalance(initialFiatBalance);
-            owner.getWallet().setCryptoBalance(initialCryptoBalance);
-            owner.getWallet().setUpdatedAt(Instant.now());
+            Owner owner = createOwnerUseCase.create(name, email, ownerType, initialFiatBalance, initialCryptoBalance);
 
             // Build response with traceData if present
             Map<String, Object> responseData = new java.util.HashMap<>();
             responseData.put("name", owner.getName());
             responseData.put("email", owner.getEmail());
-            responseData.put("createdAt", owner.getWallet().getCreatedAt());
+            responseData.put("createdAt", owner.getWallet().getCreatedAt().toString());
 
             // Add traceData if present in the request
             if (data.containsKey("traceData")) {

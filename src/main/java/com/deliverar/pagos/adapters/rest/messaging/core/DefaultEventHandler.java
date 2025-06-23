@@ -59,6 +59,11 @@ public class DefaultEventHandler implements EventHandler {
     }
 
     private EventType getResponseType(String requestTopic) {
+        // Special case: both user.creation.request and wallet.creation.request publish wallet.creation.response
+        if ("user.creation.request".equals(requestTopic)) {
+            return EventType.WALLET_CREATION_RESPONSE;
+        }
+        
         String responseTopic = requestTopic.replace(".request", ".response");
         return EventType.fromTopic(responseTopic);
     }

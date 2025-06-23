@@ -1,8 +1,0 @@
-{
-  "topic": "user.deletion.response",
-  "data": {
-    "email": "juan.perez@example.com",
-    "deletedAt": "2024-01-15T10:30:00Z",
-    "message": "Usuario eliminado exitosamente"
-  }
-}

@@ -20,14 +20,16 @@ public class DefaultCreateOwner implements CreateOwner {
 
     @Override
     @Transactional
-    public Owner create(String name, String email, OwnerType ownerType) {
+    public Owner create(String name, String email, OwnerType ownerType, BigDecimal initialFiatBalance, BigDecimal initialCryptoBalance) {
         Objects.requireNonNull(name, "Name cannot be null");
         Objects.requireNonNull(email, "Email cannot be null");
         Objects.requireNonNull(ownerType, "OwnerType cannot be null");
+        Objects.requireNonNull(initialFiatBalance, "InitialFiatBalance cannot be null");
+        Objects.requireNonNull(initialCryptoBalance, "InitialCryptoBalance cannot be null");
 
         Wallet wallet = Wallet.builder()
-                .fiatBalance(BigDecimal.ZERO)
-                .cryptoBalance(BigDecimal.ZERO)
+                .fiatBalance(initialFiatBalance)
+                .cryptoBalance(initialCryptoBalance)
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .build();

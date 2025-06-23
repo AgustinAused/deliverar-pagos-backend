@@ -28,9 +28,8 @@ public class OwnerBootstrapRunner implements CommandLineRunner {
     @Override
     public void run(String... args) {
         if (ownerRepo.findByEmail(ownerEmail).isEmpty()) {
-            Owner owner = ownerUseCase.create(ownerName, ownerEmail, OwnerType.LEGAL);
-            exchangeFiatUseCase.exchange(owner, BigDecimal.valueOf(1000000000), ExchangeOperation.INFLOW);
-            log.info("Owner created");
+            Owner owner = ownerUseCase.create(ownerName, ownerEmail, OwnerType.LEGAL, BigDecimal.valueOf(1000000000), BigDecimal.ZERO);
+            log.info("Owner created: {}", owner);
         }
     }
 }
