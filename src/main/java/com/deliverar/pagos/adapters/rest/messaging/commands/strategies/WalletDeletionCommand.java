@@ -1,22 +1,33 @@
 package com.deliverar.pagos.adapters.rest.messaging.commands.strategies;
 
-import com.deliverar.pagos.adapters.rest.messaging.commands.BaseCommand;
+import com.deliverar.pagos.adapters.rest.messaging.commands.AsyncBaseCommand;
 import com.deliverar.pagos.adapters.rest.messaging.commands.CommandResult;
+import com.deliverar.pagos.adapters.rest.messaging.commands.utils.ResponseBuilder;
+import com.deliverar.pagos.adapters.rest.messaging.commands.utils.ValidationUtils;
+import com.deliverar.pagos.adapters.rest.messaging.core.EventPublisher;
 import com.deliverar.pagos.adapters.rest.messaging.events.EventType;
 import com.deliverar.pagos.adapters.rest.messaging.events.IncomingEvent;
+import com.deliverar.pagos.domain.entities.Owner;
 import com.deliverar.pagos.domain.repositories.OwnerRepository;
-import lombok.RequiredArgsConstructor;
+import com.deliverar.pagos.domain.usecases.owner.GetOwnerByEmail;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Map;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
-public class WalletDeletionCommand extends BaseCommand {
+public class WalletDeletionCommand extends AsyncBaseCommand {
 
+    private final GetOwnerByEmail getOwnerByEmailUseCase;
     private final OwnerRepository ownerRepository;
+
+    public WalletDeletionCommand(EventPublisher eventPublisher, GetOwnerByEmail getOwnerByEmailUseCase, OwnerRepository ownerRepository) {
+        super(eventPublisher);
+        this.getOwnerByEmailUseCase = getOwnerByEmailUseCase;
+        this.ownerRepository = ownerRepository;
+    }
 
     @Override
     public boolean canHandle(EventType eventType) {
@@ -25,8 +36,15 @@ public class WalletDeletionCommand extends BaseCommand {
 
     @Override
     protected boolean validate(IncomingEvent event) {
-        Map<String, Object> data = event.getData();
-        return data != null && data.containsKey("email");
+        try {
+            Map<String, Object> data = event.getData();
+            ValidationUtils.validateRequiredFields(data, "email");
+            ValidationUtils.validateEmailFormat((String) data.get("email"));
+            return true;
+        } catch (IllegalArgumentException e) {
+            log.warn("Validation failed: {}", e.getMessage());
+            return false;
+        }
     }
 
     @Override
@@ -35,32 +53,49 @@ public class WalletDeletionCommand extends BaseCommand {
             Map<String, Object> data = event.getData();
             String email = (String) data.get("email");
 
-            // Find owner by email
-            var ownerOptional = ownerRepository.findByEmail(email);
-            if (ownerOptional.isEmpty()) {
-                return CommandResult.buildFailure("Owner not found with email: " + email);
-            }
+            log.info("Wallet deletion request initiated for email: {}", email);
 
-            var owner = ownerOptional.get();
+            // Start async processing to delete wallet and publish result
+            processAsyncWithErrorHandling(() -> {
+                processWalletDeletion(email, data, event);
+            }, event, "wallet deletion");
+
+            // Return immediate success - the actual result will be published asynchronously
+            return CommandResult.buildSuccess(null, "Wallet deletion request initiated successfully");
+
+        } catch (Exception e) {
+            log.error("Error processing wallet deletion command", e);
+            return CommandResult.buildFailure("Failed to process wallet deletion request: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Asynchronously processes the wallet deletion and publishes the result
+     */
+    private void processWalletDeletion(String email, Map<String, Object> originalData, IncomingEvent originalEvent) {
+        try {
+            log.info("Starting to delete wallet for email: {}", email);
+
+            // Validate owner exists using ValidationUtils
+            Owner owner = ValidationUtils.validateOwnerExists(getOwnerByEmailUseCase, email);
 
             // Delete the owner (which will cascade to delete the wallet)
             ownerRepository.delete(owner);
 
-            // Build response with traceData if present
-            Map<String, Object> responseData = new java.util.HashMap<>();
-            responseData.put("email", email);
-            responseData.put("deletedAt", java.time.Instant.now());
+            // Build response according to documentation
+            Map<String, Object> response = ResponseBuilder.createResponse(originalData,
+                    "email", email,
+                    "deletedAt", Instant.now().toString(),
+                    "message", "Usuario eliminado exitosamente"
+            );
 
-            // Add traceData if present in the request
-            if (data.containsKey("traceData")) {
-                responseData.put("traceData", data.get("traceData"));
-            }
-
-            return CommandResult.buildSuccess(responseData, "Wallet deleted successfully");
+            // Publish success response
+            publishSuccessResponse(originalEvent, EventType.WALLET_DELETION_RESPONSE, response);
+            log.info("Wallet deletion response published successfully for email: {}", email);
 
         } catch (Exception e) {
-            log.error("Error processing wallet deletion command", e);
-            return CommandResult.buildFailure("Failed to delete wallet: " + e.getMessage());
+            log.error("Error in async wallet deletion for email: {}", email, e);
+            publishErrorResponse(originalEvent, "Failed to delete wallet: " + e.getMessage());
         }
     }
 } 

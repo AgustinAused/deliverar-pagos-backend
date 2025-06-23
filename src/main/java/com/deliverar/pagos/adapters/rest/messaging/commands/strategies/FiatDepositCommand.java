@@ -1,29 +1,35 @@
 package com.deliverar.pagos.adapters.rest.messaging.commands.strategies;
 
-import com.deliverar.pagos.adapters.rest.messaging.commands.BaseCommand;
+import com.deliverar.pagos.adapters.rest.messaging.commands.AsyncBaseCommand;
 import com.deliverar.pagos.adapters.rest.messaging.commands.CommandResult;
+import com.deliverar.pagos.adapters.rest.messaging.commands.utils.ResponseBuilder;
+import com.deliverar.pagos.adapters.rest.messaging.commands.utils.ValidationUtils;
+import com.deliverar.pagos.adapters.rest.messaging.core.EventPublisher;
 import com.deliverar.pagos.adapters.rest.messaging.events.EventType;
 import com.deliverar.pagos.adapters.rest.messaging.events.IncomingEvent;
 import com.deliverar.pagos.domain.entities.ExchangeOperation;
 import com.deliverar.pagos.domain.entities.Owner;
 import com.deliverar.pagos.domain.usecases.owner.ExchangeFiat;
 import com.deliverar.pagos.domain.usecases.owner.GetOwnerByEmail;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Map;
-import java.util.UUID;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
-public class FiatDepositCommand extends BaseCommand {
+public class FiatDepositCommand extends AsyncBaseCommand {
 
     private final GetOwnerByEmail getOwnerByEmailUseCase;
     private final ExchangeFiat exchangeFiatUseCase;
+
+    public FiatDepositCommand(EventPublisher eventPublisher, GetOwnerByEmail getOwnerByEmailUseCase, ExchangeFiat exchangeFiatUseCase) {
+        super(eventPublisher);
+        this.getOwnerByEmailUseCase = getOwnerByEmailUseCase;
+        this.exchangeFiatUseCase = exchangeFiatUseCase;
+    }
 
     @Override
     public boolean canHandle(EventType eventType) {
@@ -32,54 +38,78 @@ public class FiatDepositCommand extends BaseCommand {
 
     @Override
     protected boolean validate(IncomingEvent event) {
-        Map<String, Object> data = event.getData();
-        return data != null &&
-                data.containsKey("email") &&
-                data.containsKey("amount");
+        try {
+            Map<String, Object> data = event.getData();
+            ValidationUtils.validateRequiredFields(data, "email", "amount");
+            ValidationUtils.validateEmailFormat((String) data.get("email"));
+            
+            BigDecimal amount = ValidationUtils.parseBigDecimal(data, "amount", BigDecimal.ZERO);
+            ValidationUtils.validatePositiveAmount(amount, "amount");
+            
+            return true;
+        } catch (IllegalArgumentException e) {
+            log.warn("Validation failed: {}", e.getMessage());
+            return false;
+        }
     }
 
     @Override
     protected CommandResult process(IncomingEvent event) {
         try {
             Map<String, Object> data = event.getData();
-
             String email = (String) data.get("email");
-            BigDecimal amount = new BigDecimal(data.get("amount").toString());
-            String description = (String) data.getOrDefault("description", "Fiat deposit");
+            BigDecimal amount = ValidationUtils.parseBigDecimal(data, "amount", BigDecimal.ZERO);
 
-            // Validate owner using the use case
-            var ownerOptional = getOwnerByEmailUseCase.get(email);
-            if (ownerOptional.isEmpty()) {
-                return CommandResult.buildFailure("Owner not found with email: " + email);
-            }
+            log.info("Fiat deposit request initiated for email: {} with amount: {}", email, amount);
 
-            Owner owner = ownerOptional.get();
+            // Start async processing to process deposit and publish result
+            processAsyncWithErrorHandling(() -> {
+                processFiatDeposit(email, amount, data, event);
+            }, event, "fiat deposit");
+
+            // Return immediate success - the actual result will be published asynchronously
+            return CommandResult.buildSuccess(null, "Fiat deposit request initiated successfully");
+
+        } catch (Exception e) {
+            log.error("Error processing fiat deposit command", e);
+            return CommandResult.buildFailure("Failed to process fiat deposit request: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Asynchronously processes the fiat deposit and publishes the result
+     */
+    private void processFiatDeposit(String email, BigDecimal amount, Map<String, Object> originalData, IncomingEvent originalEvent) {
+        try {
+            log.info("Starting to process fiat deposit for email: {} with amount: {}", email, amount);
+
+            // Validate owner using ValidationUtils
+            Owner owner = ValidationUtils.validateOwnerExists(getOwnerByEmailUseCase, email);
 
             // Process the deposit using the use case
             BigDecimal newBalance = exchangeFiatUseCase.exchange(owner, amount, ExchangeOperation.INFLOW);
 
-            // Build response
-            Map<String, Object> response = new java.util.HashMap<>();
-            response.put("transaction_id", UUID.randomUUID().toString()); // The use case creates the transaction internally
-            response.put("email", email);
-            response.put("amount", amount);
-            response.put("new_balance", newBalance);
-            response.put("currency", "FIAT");
-            response.put("concept", "DEPOSIT");
-            response.put("description", description);
-            response.put("status", "COMPLETED");
-            response.put("created_at", Instant.now());
+            // Get updated owner data to get current balances
+            Owner updatedOwner = ValidationUtils.validateOwnerExists(getOwnerByEmailUseCase, email);
 
-            // Add traceData if present in the request
-            if (data.containsKey("traceData")) {
-                response.put("traceData", data.get("traceData"));
-            }
+            // Build response according to documentation
+            Map<String, Object> response = ResponseBuilder.createResponse(originalData,
+                    "email", email,
+                    "amount", amount,
+                    "concept", originalData.getOrDefault("concept", "Fiat deposit"),
+                    "status", "SUCCESS",
+                    "transactionDate", Instant.now().toString(),
+                    "currentFiatBalance", updatedOwner.getWallet().getFiatBalance(),
+                    "currentCryptoBalance", updatedOwner.getWallet().getCryptoBalance()
+            );
 
-            return CommandResult.buildSuccess(response, "Fiat deposit completed successfully");
+            // Publish success response
+            publishSuccessResponse(originalEvent, EventType.FIAT_DEPOSIT_RESPONSE, response);
+            log.info("Fiat deposit response published successfully for email: {}", email);
 
         } catch (Exception e) {
-            log.error("Error processing fiat deposit command", e);
-            return CommandResult.buildFailure("Failed to process fiat deposit: " + e.getMessage());
+            log.error("Error in async fiat deposit for email: {}", email, e);
+            publishErrorResponse(originalEvent, "Failed to process fiat deposit: " + e.getMessage());
         }
     }
 } 
