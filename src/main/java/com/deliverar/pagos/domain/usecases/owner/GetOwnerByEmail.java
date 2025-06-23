@@ -2,9 +2,9 @@ package com.deliverar.pagos.domain.usecases.owner;
 
 import com.deliverar.pagos.domain.entities.Owner;
 
-import java.util.UUID;
+import java.util.Optional;
 
 @FunctionalInterface
-public interface GetOwner {
-    Owner get(UUID id);
-}
+public interface GetOwnerByEmail {
+    Optional<Owner> get(String email);
+} 
