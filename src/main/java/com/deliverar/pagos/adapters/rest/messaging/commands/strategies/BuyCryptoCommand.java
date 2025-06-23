@@ -66,18 +66,13 @@ public class BuyCryptoCommand extends BaseCommand {
             UUID transactionId = deliverCoinService.buyCryptoWithFiat(email, amount);
             log.info("Buy crypto transaction initiated with ID: {}", transactionId);
 
-            // Start async processing to wait for transaction completion and publish result
+            // Start async processing to wait for final status and publish result
             CompletableFuture.runAsync(() -> {
                 processTransactionCompletion(transactionId, email, amount, event);
             });
 
-            // Return immediate success - the actual result will be published asynchronously
-            Map<String, Object> response = new java.util.HashMap<>();
-            response.put("transactionId", transactionId.toString());
-            response.put("status", "PROCESSING");
-            response.put("message", "Crypto purchase initiated successfully. Result will be published asynchronously.");
-
-            return CommandResult.buildSuccess(response, "Crypto purchase initiated successfully");
+            // Return immediate success - the actual result will be published asynchronously when final status is reached
+            return CommandResult.buildSuccess(null, "Crypto purchase initiated successfully");
 
         } catch (Exception e) {
             log.error("Error processing buy crypto command", e);
@@ -87,16 +82,22 @@ public class BuyCryptoCommand extends BaseCommand {
 
     /**
      * Asynchronously processes the transaction completion and publishes the result
+     * Only publishes when the transaction reaches a final status (SUCCESS or FAILURE)
      */
     private void processTransactionCompletion(UUID transactionId, String email, BigDecimal amount, IncomingEvent originalEvent) {
         try {
-            // Wait for the transaction to reach final status
+            log.info("Starting to monitor transaction {} for final status", transactionId);
+            
+            // Wait for the transaction to reach final status (ignore PENDING)
             Transaction transaction = waitForFinalTransactionStatus(transactionId);
 
             if (transaction.getStatus() == TransactionStatus.FAILURE) {
+                log.info("Transaction {} reached FAILURE status, publishing error response", transactionId);
                 publishErrorResponse("Crypto purchase failed: Transaction failed on blockchain", originalEvent);
                 return;
             }
+
+            log.info("Transaction {} reached SUCCESS status, publishing success response", transactionId);
 
             // Refresh owner data to get updated balances
             var ownerOptional = getOwnerByEmailUseCase.get(email);
@@ -123,7 +124,7 @@ public class BuyCryptoCommand extends BaseCommand {
                 response.put("traceData", originalEvent.getData().get("traceData"));
             }
 
-            // Publish success response
+            // Publish success response only when final status is reached
             OutgoingEvent successEvent = OutgoingEvent.buildResponse(
                     originalEvent,
                     EventType.BUY_CRYPTO_RESPONSE,
@@ -149,6 +150,7 @@ public class BuyCryptoCommand extends BaseCommand {
 
     /**
      * Waits for the transaction to reach a final status (SUCCESS or FAILURE)
+     * Ignores PENDING status and continues polling until final status is reached
      *
      * @param transactionId The transaction ID to monitor
      * @return The transaction with final status
@@ -167,7 +169,7 @@ public class BuyCryptoCommand extends BaseCommand {
                     return transaction;
                 }
 
-                log.debug("Transaction {} still {}, waiting...", transactionId, transaction.getStatus());
+                log.debug("Transaction {} still PENDING, waiting for final status...", transactionId);
                 Thread.sleep(POLL_INTERVAL_MS);
 
             } catch (InterruptedException e) {
