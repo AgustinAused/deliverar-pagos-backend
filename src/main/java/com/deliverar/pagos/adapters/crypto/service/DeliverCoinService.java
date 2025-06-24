@@ -161,7 +161,7 @@ public class DeliverCoinService {
                 .amount(cryptoAmount)
                 .currency(CurrencyType.CRYPTO)
                 .conversionRate(BigDecimal.ONE)
-                .concept("BUY_CRYPTO")
+                .concept(TransactionConcept.BUY_CRYPTO.name())
                 .status(TransactionStatus.PENDING)
                 .transactionDate(Instant.now())
                 .build();
@@ -231,7 +231,7 @@ public class DeliverCoinService {
                 .amount(cryptoAmount)
                 .currency(CurrencyType.CRYPTO)
                 .conversionRate(BigDecimal.ONE)
-                .concept("SELL_CRYPTO")
+                .concept(TransactionConcept.SELL_CRYPTO.name())
                 .status(TransactionStatus.PENDING)
                 .transactionDate(Instant.now())
                 .build();
