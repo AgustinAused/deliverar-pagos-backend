@@ -41,7 +41,7 @@ public class GetBalancesCommand extends BaseCommand {
             Map<String, Object> data = event.getData();
             String email = (String) data.get("email");
 
-            // Validate owner using use case
+            // Validate owner
             var ownerOptional = getOwnerByEmailUseCase.get(email);
             if (ownerOptional.isEmpty()) {
                 return CommandResult.buildFailure("Owner not found with email: " + email);
@@ -70,7 +70,7 @@ public class GetBalancesCommand extends BaseCommand {
         try {
             log.info("Starting to retrieve balances for email: {}", email);
 
-            // Get owner using use case
+            // Get owner
             var ownerOptional = getOwnerByEmailUseCase.get(email);
             if (ownerOptional.isEmpty()) {
                 publishErrorResponse("Owner not found with email: " + email, originalEvent);

@@ -4,14 +4,15 @@ import com.deliverar.pagos.adapters.crypto.service.DeliverCoinService;
 import com.deliverar.pagos.adapters.rest.messaging.commands.BaseCommand;
 import com.deliverar.pagos.adapters.rest.messaging.commands.CommandResult;
 import com.deliverar.pagos.adapters.rest.messaging.core.EventPublisher;
+import com.deliverar.pagos.adapters.rest.messaging.events.EventStatus;
 import com.deliverar.pagos.adapters.rest.messaging.events.EventType;
 import com.deliverar.pagos.adapters.rest.messaging.events.IncomingEvent;
 import com.deliverar.pagos.adapters.rest.messaging.events.OutgoingEvent;
-import com.deliverar.pagos.adapters.rest.messaging.events.EventStatus;
 import com.deliverar.pagos.domain.dtos.TransferRequest;
 import com.deliverar.pagos.domain.entities.Owner;
 import com.deliverar.pagos.domain.entities.Transaction;
 import com.deliverar.pagos.domain.entities.TransactionStatus;
+import com.deliverar.pagos.domain.exceptions.InternalServerException;
 import com.deliverar.pagos.domain.usecases.owner.GetOwnerByEmail;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,36 +45,35 @@ public class CryptoPaymentCommand extends BaseCommand {
     @Override
     protected boolean validate(IncomingEvent event) {
         Map<String, Object> data = event.getData();
-        return data != null && 
-               data.containsKey("fromEmail") && 
-               data.containsKey("toEmail") &&
-               data.containsKey("amount");
+        return data != null &&
+                data.containsKey("fromEmail") &&
+                data.containsKey("toEmail") &&
+                data.containsKey("amount");
     }
 
     @Override
     protected CommandResult process(IncomingEvent event) {
         try {
             Map<String, Object> data = event.getData();
-            
+
             String fromEmail = (String) data.get("fromEmail");
             String toEmail = (String) data.get("toEmail");
             BigDecimal amount = new BigDecimal(data.get("amount").toString());
             String concept = (String) data.getOrDefault("concept", "Crypto payment");
 
-            // Validate sender using use case
+            // Validate sender
             var fromOwnerOptional = getOwnerByEmailUseCase.get(fromEmail);
             if (fromOwnerOptional.isEmpty()) {
                 return CommandResult.buildFailure("Sender not found with email: " + fromEmail);
             }
 
-            // Validate recipient using use case
+            // Validate recipient
             var toOwnerOptional = getOwnerByEmailUseCase.get(toEmail);
             if (toOwnerOptional.isEmpty()) {
                 return CommandResult.buildFailure("Recipient not found with email: " + toEmail);
             }
 
             Owner fromOwner = fromOwnerOptional.get();
-            Owner toOwner = toOwnerOptional.get();
 
             // Check if sender has sufficient balance
             if (fromOwner.getWallet().getCryptoBalance().compareTo(amount) < 0) {
@@ -111,7 +111,7 @@ public class CryptoPaymentCommand extends BaseCommand {
     private void processTransactionCompletion(UUID transactionId, String fromEmail, String toEmail, BigDecimal amount, String concept, IncomingEvent originalEvent) {
         try {
             log.info("Starting to monitor transaction {} for final status", transactionId);
-            
+
             // Wait for the transaction to reach final status (ignore PENDING)
             Transaction transaction = waitForFinalTransactionStatus(transactionId);
 
@@ -199,13 +199,13 @@ public class CryptoPaymentCommand extends BaseCommand {
 
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new RuntimeException("Transaction monitoring interrupted", e);
+                throw new InternalServerException("Transaction monitoring interrupted", e);
             } catch (Exception e) {
                 log.error("Error checking transaction status for ID: {}", transactionId, e);
-                throw new RuntimeException("Failed to check transaction status", e);
+                throw new InternalServerException("Failed to check transaction status", e);
             }
         }
 
-        throw new RuntimeException("Timeout waiting for transaction " + transactionId + " to reach final status");
+        throw new InternalServerException("Timeout waiting for transaction " + transactionId + " to reach final status");
     }
 } 

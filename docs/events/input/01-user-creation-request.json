@@ -8,7 +8,6 @@
     },
     "name": "Juan Pérez",
     "email": "juan.perez@example.com",
-    "initialFiatBalance": 10000,
-    "initialCryptoBalance": 500
+    "initialFiatBalance": 10000
   }
 }

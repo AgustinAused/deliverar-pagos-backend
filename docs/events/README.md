@@ -267,7 +267,6 @@ Para eventos que requieren trazabilidad entre módulos, se incluye un objeto `tr
 ### Campos de Wallet
 
 - `initialFiatBalance`: Saldo inicial en fiat
-- `initialCryptoBalance`: Saldo inicial en crypto
 - `fiat_balance`: Saldo actual en fiat
 - `crypto_balance`: Saldo actual en crypto
 

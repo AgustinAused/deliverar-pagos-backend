@@ -82,7 +82,7 @@ public class UserCreationCommand extends AsyncBaseCommand {
 
             // Get initial balances using ValidationUtils
             BigDecimal initialFiatBalance = ValidationUtils.parseBigDecimal(originalData, "initialFiatBalance", BigDecimal.ZERO);
-            BigDecimal initialCryptoBalance = ValidationUtils.parseBigDecimal(originalData, "initialCryptoBalance", BigDecimal.ZERO);
+            BigDecimal initialCryptoBalance = BigDecimal.ZERO;
 
             // Create owner using the use case
             Owner owner = createOwnerUseCase.create(name, email, ownerType, initialFiatBalance, initialCryptoBalance);
