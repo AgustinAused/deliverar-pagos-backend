@@ -38,4 +38,18 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
             @Param("sinceDate") Instant sinceDate,
             Pageable pageable
     );
+    
+    @Query("SELECT t FROM Transaction t " +
+           "JOIN FETCH t.originOwner " +
+           "JOIN FETCH t.destinationOwner " +
+           "WHERE t.transactionDate >= :sinceDate")
+    Page<Transaction> findAllByTransactionDateGreaterThanEqualWithOwners(
+            @Param("sinceDate") Instant sinceDate,
+            Pageable pageable
+    );
+    
+    @Query("SELECT t FROM Transaction t " +
+           "JOIN FETCH t.originOwner " +
+           "JOIN FETCH t.destinationOwner")
+    Page<Transaction> findAllWithOwners(Pageable pageable);
 }
