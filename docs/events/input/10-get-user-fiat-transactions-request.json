@@ -6,6 +6,7 @@
       "originModule" : "module-name", // Módulo que hizo el pedido
       "traceId" : "xxx"  // El id que ellos usan para identificar su propio pedido
     },
+    "email": "juan.perez@example.com",
     "transactionDateSince": "2024-01-01T09:15:00Z" // Desde qué fecha quieren que le pasemos, si no está/está vacía pasamos todas
   }
 }
