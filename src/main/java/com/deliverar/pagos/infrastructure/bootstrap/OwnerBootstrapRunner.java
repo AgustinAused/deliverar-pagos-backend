@@ -1,7 +1,9 @@
 package com.deliverar.pagos.infrastructure.bootstrap;
 
+import com.deliverar.pagos.adapters.crypto.service.DeliverCoinService;
 import com.deliverar.pagos.domain.entities.*;
 import com.deliverar.pagos.domain.repositories.OwnerRepository;
+import com.deliverar.pagos.domain.usecases.owner.CreateOwner;
 import com.deliverar.pagos.domain.usecases.owner.impl.DefaultCreateOwner;
 import com.deliverar.pagos.domain.usecases.owner.impl.DefaultExchangeFiat;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +19,9 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 public class OwnerBootstrapRunner implements CommandLineRunner {
 
-    private final DefaultCreateOwner ownerUseCase;
+    private final CreateOwner ownerUseCase;
+    private final DeliverCoinService deliverCoinService;
     private final OwnerRepository ownerRepo;
-    private final DefaultExchangeFiat exchangeFiatUseCase;
     @Value("${app.bootstrap.owner.email}")
     private String ownerEmail;
     @Value("${app.bootstrap.owner.name}")
@@ -28,7 +30,13 @@ public class OwnerBootstrapRunner implements CommandLineRunner {
     @Override
     public void run(String... args) {
         if (ownerRepo.findByEmail(ownerEmail).isEmpty()) {
-            Owner owner = ownerUseCase.create(ownerName, ownerEmail, OwnerType.LEGAL, BigDecimal.valueOf(1000000000), BigDecimal.ZERO);
+            BigDecimal cryptoBalance = BigDecimal.ZERO;
+            try {
+                cryptoBalance = deliverCoinService.balanceOf(ownerEmail);
+            } catch (Exception e) {
+                log.error("Error getting the crypto balance of owner. Error message: {}", e.getMessage());
+            }
+            Owner owner = ownerUseCase.create(ownerName, ownerEmail, OwnerType.LEGAL, BigDecimal.valueOf(1000000000), cryptoBalance);
             log.info("Owner created: {}", owner);
         }
     }
