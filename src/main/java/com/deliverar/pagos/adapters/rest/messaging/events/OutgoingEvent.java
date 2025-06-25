@@ -12,24 +12,24 @@ public class OutgoingEvent extends Event {
     private String target;
     private EventStatus status;
 
-    public OutgoingEvent(String topic, Map<String, Object> data, String correlationId, String target, EventStatus status) {
-        super(topic, data);
+    public OutgoingEvent(String topic, Map<String, Object> payload, String correlationId, String target, EventStatus status) {
+        super(topic, payload);
         this.correlationId = correlationId;
         this.target = target;
         this.status = status;
     }
 
     public static OutgoingEvent buildResponse(IncomingEvent incomingEvent, EventType responseType, Object data, EventStatus status) {
-        Map<String, Object> eventData;
+        Map<String, Object> eventPayload;
         if (data instanceof Map) {
-            eventData = (Map<String, Object>) data;
+            eventPayload = (Map<String, Object>) data;
         } else {
-            eventData = Map.of("value", data);
+            eventPayload = Map.of("value", data);
         }
         
         return new OutgoingEvent(
                 responseType.getTopic(),
-                eventData,
+                eventPayload,
                 incomingEvent.getCorrelationId(),
                 incomingEvent.getSource(),
                 status

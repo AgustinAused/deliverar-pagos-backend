@@ -42,19 +42,19 @@ public class SellCryptoCommand extends BaseCommand {
 
     @Override
     protected boolean validate(IncomingEvent event) {
-        Map<String, Object> data = event.getData();
-        return data != null &&
-                data.containsKey("email") &&
-                data.containsKey("amount");
+        Map<String, Object> payload = event.getPayload();
+        return payload != null &&
+                payload.containsKey("email") &&
+                payload.containsKey("amount");
     }
 
     @Override
     protected CommandResult process(IncomingEvent event) {
         try {
-            Map<String, Object> data = event.getData();
+            Map<String, Object> payload = event.getPayload();
 
-            String email = (String) data.get("email");
-            BigDecimal amount = new BigDecimal(data.get("amount").toString());
+            String email = (String) payload.get("email");
+            BigDecimal amount = new BigDecimal(payload.get("amount").toString());
 
             // Validate owner using the use case
             var ownerOptional = getOwnerByEmailUseCase.get(email);
@@ -99,7 +99,7 @@ public class SellCryptoCommand extends BaseCommand {
 
             log.info("Transaction {} reached SUCCESS status, publishing success response", transactionId);
 
-            // Refresh owner data to get updated balances
+            // Refresh owner payload to get updated balances
             var ownerOptional = getOwnerByEmailUseCase.get(email);
             if (ownerOptional.isEmpty()) {
                 publishErrorResponse("Owner not found after transaction completion", originalEvent);
@@ -119,8 +119,8 @@ public class SellCryptoCommand extends BaseCommand {
             response.put("currentCryptoBalance", owner.getWallet().getCryptoBalance());
 
             // Add traceData if present in the request
-            if (originalEvent.getData().containsKey("traceData")) {
-                response.put("traceData", originalEvent.getData().get("traceData"));
+            if (originalEvent.getPayload().containsKey("traceData")) {
+                response.put("traceData", originalEvent.getPayload().get("traceData"));
             }
 
             // Publish success response only when final status is reached

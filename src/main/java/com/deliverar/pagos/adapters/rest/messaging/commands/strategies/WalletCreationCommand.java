@@ -36,9 +36,9 @@ public class WalletCreationCommand extends AsyncBaseCommand {
     @Override
     protected boolean validate(IncomingEvent event) {
         try {
-            Map<String, Object> data = event.getData();
-            ValidationUtils.validateRequiredFields(data, "name", "email");
-            ValidationUtils.validateEmailFormat((String) data.get("email"));
+            Map<String, Object> payload = event.getPayload();
+            ValidationUtils.validateRequiredFields(payload, "name", "email");
+            ValidationUtils.validateEmailFormat((String) payload.get("email"));
             return true;
         } catch (IllegalArgumentException e) {
             log.warn("Validation failed: {}", e.getMessage());
@@ -49,15 +49,15 @@ public class WalletCreationCommand extends AsyncBaseCommand {
     @Override
     protected CommandResult process(IncomingEvent event) {
         try {
-            Map<String, Object> data = event.getData();
-            String name = (String) data.get("name");
-            String email = (String) data.get("email");
+            Map<String, Object> payload = event.getPayload();
+            String name = (String) payload.get("name");
+            String email = (String) payload.get("email");
 
             log.info("Wallet creation request initiated for email: {}", email);
 
             // Start async processing to create wallet and publish result
             processAsyncWithErrorHandling(() -> {
-                processWalletCreation(name, email, data, event);
+                processWalletCreation(name, email, payload, event);
             }, event, "wallet creation");
 
             // Return immediate success - the actual result will be published asynchronously

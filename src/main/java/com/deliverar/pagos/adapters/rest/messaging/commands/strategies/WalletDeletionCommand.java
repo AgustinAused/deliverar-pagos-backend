@@ -37,9 +37,9 @@ public class WalletDeletionCommand extends AsyncBaseCommand {
     @Override
     protected boolean validate(IncomingEvent event) {
         try {
-            Map<String, Object> data = event.getData();
-            ValidationUtils.validateRequiredFields(data, "email");
-            ValidationUtils.validateEmailFormat((String) data.get("email"));
+            Map<String, Object> payload = event.getPayload();
+            ValidationUtils.validateRequiredFields(payload, "email");
+            ValidationUtils.validateEmailFormat((String) payload.get("email"));
             return true;
         } catch (IllegalArgumentException e) {
             log.warn("Validation failed: {}", e.getMessage());
@@ -50,14 +50,14 @@ public class WalletDeletionCommand extends AsyncBaseCommand {
     @Override
     protected CommandResult process(IncomingEvent event) {
         try {
-            Map<String, Object> data = event.getData();
-            String email = (String) data.get("email");
+            Map<String, Object> payload = event.getPayload();
+            String email = (String) payload.get("email");
 
             log.info("Wallet deletion request initiated for email: {}", email);
 
             // Start async processing to delete wallet and publish result
             processAsyncWithErrorHandling(() -> {
-                processWalletDeletion(email, data, event);
+                processWalletDeletion(email, payload, event);
             }, event, "wallet deletion");
 
             // Return immediate success - the actual result will be published asynchronously

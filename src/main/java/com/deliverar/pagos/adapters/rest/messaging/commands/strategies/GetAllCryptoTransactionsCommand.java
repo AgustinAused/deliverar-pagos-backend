@@ -39,12 +39,12 @@ public class GetAllCryptoTransactionsCommand extends AsyncBaseCommand {
     @Override
     protected boolean validate(IncomingEvent event) {
         try {
-            Map<String, Object> data = event.getData();
+            Map<String, Object> payload = event.getPayload();
             
             // Validate transactionDateSince if present (optional)
-            if (data.containsKey("transactionDateSince") && data.get("transactionDateSince") != null) {
-                log.info("Transaction dates since: {}", data.get("transactionDateSince"));
-                String dateStr = data.get("transactionDateSince").toString();
+            if (payload.containsKey("transactionDateSince") && payload.get("transactionDateSince") != null) {
+                log.info("Transaction dates since: {}", payload.get("transactionDateSince"));
+                String dateStr = payload.get("transactionDateSince").toString();
                 if (!dateStr.isEmpty()) {
                     Instant.parse(dateStr); // Validate date format
                 }
@@ -60,13 +60,13 @@ public class GetAllCryptoTransactionsCommand extends AsyncBaseCommand {
     @Override
     protected CommandResult process(IncomingEvent event) {
         try {
-            Map<String, Object> data = event.getData();
+            Map<String, Object> payload = event.getPayload();
 
             log.info("Get all crypto transactions request initiated");
 
             // Start async processing to get transactions and publish result
             processAsyncWithErrorHandling(() -> {
-                processGetAllCryptoTransactions(data, event);
+                processGetAllCryptoTransactions(payload, event);
             }, event, "get all crypto transactions");
 
             // Return immediate success - the actual result will be published asynchronously
