@@ -1,6 +1,6 @@
 {
   "topic": "<cualquier.topico>", // Este topic representa cómo va a ser la respuesta en caso de error
-  "data": {
+  "payload": {
     "traceData" : {
       "originModule" : "module-name", // Módulo que hizo el pedido
       "traceId" : "xxx"  // El id que ellos usan para identificar su propio pedido

@@ -1,6 +1,6 @@
 {
   "topic": "fiat.withdrawal.response",
-  "data": {
+  "payload": {
     "traceData" : {
       "originModule" : "module-name", // Módulo que hizo el pedido
       "traceId" : "xxx"  // El id que ellos usan para identificar su propio pedido
