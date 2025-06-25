@@ -7,6 +7,6 @@
       "traceId" : "xxx"  // El id que ellos usan para identificar su propio pedido
     },
     "email": "juan.perez@example.com",
-    "amount": "25.00"
+    "amount": 25.00
   }
 }

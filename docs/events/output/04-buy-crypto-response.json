@@ -7,11 +7,11 @@
     },
     "transactionId": "550e8400-e29b-41d4-a716-446655440002",
     "email": "juan.perez@example.com",
-    "cryptoAmount": "50.00", // Cuanto se compró (el monto que se pidió)
+    "cryptoAmount": 50.00, // Cuanto se compró (el monto que se pidió)
     "status": "SUCCESS",
     "blockchainTxHash": "0xabcdef1234567890...",
     "transactionDate": "2024-01-15T10:30:00Z",
-    "currentFiatBalance": "5000.00", // En cuanto quedó el saldo de pesos
-    "currentCryptoBalance": "150.75" // En cuanto quedó el saldo de cryptos
+    "currentFiatBalance": 5000.00, // En cuanto quedó el saldo de pesos
+    "currentCryptoBalance": 150.75 // En cuanto quedó el saldo de cryptos
   }
 }

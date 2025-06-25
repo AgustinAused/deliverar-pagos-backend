@@ -9,7 +9,7 @@
       {
         "fromEmail": "juan.perez@example.com",
         "toEmail": "maria.garcia@example.com",
-        "amount": "100.50",
+        "amount": 100.50,
         "concept": "Pago por servicios",
         "type": "PAYMENT",
         "status": "PENDING",
@@ -21,7 +21,7 @@
         // Recomiendo que a los que muestran los listados tengan en cuenta eso, capaz prefieren no mostrarlo
         "fromEmail": "deliverar@example.com",
         "toEmail": "maria.garcia@example.com", // El user que compra crypto
-        "amount": "50.00",
+        "amount": 50.00,
         "concept": "Compra de crypto",
         "type": "BUY",
         "status": "PENDING",

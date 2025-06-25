@@ -7,12 +7,12 @@
     },
     "fromEmail": "juan.perez@example.com",
     "toEmail": "maria.garcia@example.com",
-    "amount": "100.50",
+    "amount": 100.50,
     "concept": "Pago por servicios",
     "status": "SUCCESS",
     "blockchainTxHash": "0x1234567890abcdef...",
     "transactionDate": "2024-01-15T10:30:00Z",
-    "currentFiatBalance": "5000.00", // En cuanto quedó el saldo de pesos
-    "currentCryptoBalance": "150.75" // En cuanto quedó el saldo de cryptos
+    "currentFiatBalance": 5000.00, // En cuanto quedó el saldo de pesos
+    "currentCryptoBalance": 150.75 // En cuanto quedó el saldo de cryptos
   }
 }

@@ -7,6 +7,8 @@
     },
     "name": "Juan Pérez",
     "email": "juan.perez@example.com",
-    "createdAt": "2024-01-15T10:30:00Z"
+    "createdAt": "2024-01-15T10:30:00Z",
+    "fiatBalance": 0,
+    "cryptoBalance": 0
   }
 }

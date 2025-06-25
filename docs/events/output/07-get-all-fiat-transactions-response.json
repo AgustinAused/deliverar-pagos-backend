@@ -8,7 +8,7 @@
     "transactions": [
       {
         "email": "juan.perez@example.com",
-        "amount": "5000.00",
+        "amount": 5000.00,
         "concept": "Depósito bancario",
         "type": "DEPOSIT",
         "status": "SUCCESS",
@@ -16,7 +16,7 @@
       },
       {
         "email": "maria.garcia@example.com",
-        "amount": "250.00",
+        "amount": 250.00,
         "concept": "Pago de factura",
         "type": "PAYMENT",
         "status": "SUCCESS",
