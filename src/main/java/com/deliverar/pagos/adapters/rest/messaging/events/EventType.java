@@ -9,8 +9,11 @@ import lombok.Getter;
 public enum EventType {
     // Eventos de Entrada
     USER_CREATION_REQUEST("user.creation.request"),
-    USER_DELETION_REQUEST("user.deletion.request"),
+    TENANT_CREATION_REQUEST("user.creation.request"),
+    DELIVERY_USER_CREATED_REQUEST("wallet.creation.request"),
     WALLET_CREATION_REQUEST("wallet.creation.request"),
+
+    USER_DELETION_REQUEST("user.deletion.request"),
     WALLET_DELETION_REQUEST("wallet.deletion.request"),
     GET_BALANCES_REQUEST("get.balances.request"),
     GET_USER_FIAT_TRANSACTIONS_REQUEST("get.user.fiat.transactions.request"),

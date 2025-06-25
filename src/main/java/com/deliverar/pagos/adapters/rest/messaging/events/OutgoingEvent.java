@@ -19,12 +19,12 @@ public class OutgoingEvent extends Event {
         this.status = status;
     }
 
-    public static OutgoingEvent buildResponse(IncomingEvent incomingEvent, EventType responseType, Object data, EventStatus status) {
+    public static OutgoingEvent buildResponse(IncomingEvent incomingEvent, EventType responseType, Object payload, EventStatus status) {
         Map<String, Object> eventPayload;
-        if (data instanceof Map) {
-            eventPayload = (Map<String, Object>) data;
+        if (payload instanceof Map) {
+            eventPayload = (Map<String, Object>) payload;
         } else {
-            eventPayload = Map.of("value", data);
+            eventPayload = Map.of("value", payload);
         }
         
         return new OutgoingEvent(

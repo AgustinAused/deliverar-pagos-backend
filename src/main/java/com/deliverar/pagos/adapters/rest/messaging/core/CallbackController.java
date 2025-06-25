@@ -51,7 +51,7 @@ public class CallbackController {
             // Publicar evento interno para procesamiento asíncrono
             Event internalEvent = Event.builder()
                     .topic(event.topic())
-                    .data(event.data())
+                    .payload(event.payload())
                     .build();
 
             applicationEventPublisher.publishEvent(internalEvent);

@@ -28,14 +28,14 @@ public abstract class AsyncBaseCommand extends BaseCommand {
      * 
      * @param originalEvent The original incoming event
      * @param responseType The type of response event to publish
-     * @param data The response data
+     * @param payload The response payload
      */
-    protected void publishSuccessResponse(IncomingEvent originalEvent, EventType responseType, Map<String, Object> data) {
+    protected void publishSuccessResponse(IncomingEvent originalEvent, EventType responseType, Map<String, Object> payload) {
         try {
             OutgoingEvent successEvent = OutgoingEvent.buildResponse(
                     originalEvent,
                     responseType,
-                    data,
+                    payload,
                     EventStatus.SUCCESS
             );
             eventPublisher.publish(successEvent);

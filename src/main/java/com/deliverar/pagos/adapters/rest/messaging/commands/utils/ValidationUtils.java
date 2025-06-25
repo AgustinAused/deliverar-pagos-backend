@@ -33,15 +33,15 @@ public class ValidationUtils {
     }
 
     /**
-     * Validates that all required fields are present in the data.
+     * Validates that all required fields are present in the payload.
      * 
-     * @param data The data to validate
+     * @param payload The payload to validate
      * @param fields The required field names
      * @throws IllegalArgumentException if any required field is missing
      */
-    public static void validateRequiredFields(Map<String, Object> data, String... fields) {
+    public static void validateRequiredFields(Map<String, Object> payload, String... fields) {
         for (String field : fields) {
-            if (!data.containsKey(field) || data.get(field) == null) {
+            if (!payload.containsKey(field) || payload.get(field) == null) {
                 log.warn("Required field missing: {}", field);
                 throw new IllegalArgumentException("Required field missing: " + field);
             }
@@ -49,22 +49,22 @@ public class ValidationUtils {
     }
 
     /**
-     * Parses a BigDecimal from the data map with a default value.
+     * Parses a BigDecimal from the payload map with a default value.
      * 
-     * @param data The data map
+     * @param payload The payload map
      * @param field The field name
      * @param defaultValue The default value if field is not present
      * @return The parsed BigDecimal or default value
      */
-    public static BigDecimal parseBigDecimal(Map<String, Object> data, String field, BigDecimal defaultValue) {
-        if (!data.containsKey(field) || data.get(field) == null) {
+    public static BigDecimal parseBigDecimal(Map<String, Object> payload, String field, BigDecimal defaultValue) {
+        if (!payload.containsKey(field) || payload.get(field) == null) {
             return defaultValue;
         }
         
         try {
-            return new BigDecimal(data.get(field).toString());
+            return new BigDecimal(payload.get(field).toString());
         } catch (NumberFormatException e) {
-            log.warn("Invalid number format for field {}: {}", field, data.get(field));
+            log.warn("Invalid number format for field {}: {}", field, payload.get(field));
             throw new IllegalArgumentException("Invalid number format for field: " + field);
         }
     }

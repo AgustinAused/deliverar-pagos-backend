@@ -2,7 +2,6 @@ package com.deliverar.pagos.adapters.rest.messaging.commands.strategies;
 
 import com.deliverar.pagos.adapters.rest.messaging.commands.AsyncBaseCommand;
 import com.deliverar.pagos.adapters.rest.messaging.commands.CommandResult;
-import com.deliverar.pagos.adapters.rest.messaging.commands.utils.OwnerTypeUtils;
 import com.deliverar.pagos.adapters.rest.messaging.commands.utils.ResponseBuilder;
 import com.deliverar.pagos.adapters.rest.messaging.commands.utils.ValidationUtils;
 import com.deliverar.pagos.adapters.rest.messaging.core.EventPublisher;
@@ -30,7 +29,10 @@ public class UserCreationCommand extends AsyncBaseCommand {
 
     @Override
     public boolean canHandle(EventType eventType) {
-        return EventType.USER_CREATION_REQUEST.equals(eventType);
+        return EventType.USER_CREATION_REQUEST.equals(eventType)
+                || EventType.TENANT_CREATION_REQUEST.equals(eventType)
+                || EventType.DELIVERY_USER_CREATED_REQUEST.equals(eventType)
+                || EventType.WALLET_CREATION_REQUEST.equals(eventType);
     }
 
     @Override
@@ -76,8 +78,9 @@ public class UserCreationCommand extends AsyncBaseCommand {
         try {
             log.info("Starting to create user for email: {}", email);
 
-            // Determine owner type based on origin module
-            OwnerType ownerType = OwnerTypeUtils.determineOwnerType(originalData);
+            OwnerType ownerType = EventType.TENANT_CREATION_REQUEST.getTopic()
+                    .equals(originalEvent.getTopic()) ? OwnerType.LEGAL : OwnerType.NATURAL;
+
             log.info("Creating owner with type: {} for email: {}", ownerType, email);
 
             // Get initial balances using ValidationUtils

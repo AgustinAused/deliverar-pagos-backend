@@ -38,8 +38,8 @@ public class DefaultEventHandler implements EventHandler {
     }
 
     private void publishSuccessResponse(IncomingEvent event, CommandResult result) {
-        // If data is null, it means the response will be published asynchronously
-        if (result.getData() == null) {
+        // If payload is null, it means the response will be published asynchronously
+        if (result.getPayload() == null) {
             log.debug("Skipping synchronous response publication for event: {} - response will be published asynchronously", event.getTopic());
             return;
         }
@@ -48,7 +48,7 @@ public class DefaultEventHandler implements EventHandler {
         OutgoingEvent response = OutgoingEvent.buildResponse(
                 event,
                 responseType,
-                result.getData(),
+                result.getPayload(),
                 EventStatus.SUCCESS
         );
         eventPublisher.publish(response);

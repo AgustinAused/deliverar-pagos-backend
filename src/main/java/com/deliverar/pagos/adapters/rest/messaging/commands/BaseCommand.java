@@ -12,7 +12,7 @@ public abstract class BaseCommand implements Command {
             log.info("Executing command for event: {}", event.getTopic());
 
             if (!validate(event)) {
-                return CommandResult.buildFailure("Invalid event data");
+                return CommandResult.buildFailure("Invalid event payload");
             }
 
             return process(event);

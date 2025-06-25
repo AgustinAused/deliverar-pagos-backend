@@ -13,5 +13,5 @@ import java.util.Map;
 @NoArgsConstructor
 public class Event {
     private String topic;
-    private Map<String, Object> data;
+    private Map<String, Object> payload;
 }
