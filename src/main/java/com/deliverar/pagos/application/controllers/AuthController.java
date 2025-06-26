@@ -2,6 +2,7 @@ package com.deliverar.pagos.application.controllers;
 
 import com.deliverar.pagos.domain.dtos.AuthRequest;
 import com.deliverar.pagos.domain.dtos.AuthResponse;
+import com.deliverar.pagos.domain.dtos.LdapAuthRequest;
 import com.deliverar.pagos.domain.entities.User;
 import com.deliverar.pagos.domain.repositories.UserRepository;
 import com.deliverar.pagos.infrastructure.security.JwtUtil;
@@ -138,22 +139,17 @@ public class AuthController {
             description = "Autentica un usuario directamente contra Active Directory sin validación local")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Autenticación exitosa",
-                content = @Content),
+                content = { @Content(mediaType = "application/json",
+                        schema = @Schema(implementation = Map.class)) }),
         @ApiResponse(responseCode = "401", description = "Credenciales inválidas",
                 content = @Content),
         @ApiResponse(responseCode = "400", description = "Parámetros requeridos faltantes",
                 content = @Content)
     })
     @PostMapping("/ldap-login")
-    public ResponseEntity<?> ldapLogin(@RequestBody Map<String, String> body) {
-        String email = body.get("email");
-        String password = body.get("password");
-        
-        if (email == null || password == null || email.trim().isEmpty() || password.trim().isEmpty()) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(Map.of("error", "Parámetros 'email' y 'password' son requeridos"));
-        }
+    public ResponseEntity<?> ldapLogin(@Valid @RequestBody LdapAuthRequest request) {
+        String email = request.getEmail();
+        String password = request.getPassword();
 
         String domain = "DELIVERAR";
         String fqdnUser;
