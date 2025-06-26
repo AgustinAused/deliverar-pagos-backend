@@ -25,7 +25,7 @@ public class HubEventListener {
             // Convertir Event interno a IncomingEvent
             IncomingEvent incomingEvent = new IncomingEvent(
                     event.getTopic(),
-                    event.getData(),
+                    event.getPayload(),
                     generateCorrelationId(),
                     "external-hub"
             );

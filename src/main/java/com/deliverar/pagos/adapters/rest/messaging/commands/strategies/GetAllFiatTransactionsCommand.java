@@ -3,14 +3,11 @@ package com.deliverar.pagos.adapters.rest.messaging.commands.strategies;
 import com.deliverar.pagos.adapters.rest.messaging.commands.AsyncBaseCommand;
 import com.deliverar.pagos.adapters.rest.messaging.commands.CommandResult;
 import com.deliverar.pagos.adapters.rest.messaging.commands.utils.ResponseBuilder;
-import com.deliverar.pagos.adapters.rest.messaging.commands.utils.ValidationUtils;
 import com.deliverar.pagos.adapters.rest.messaging.core.EventPublisher;
 import com.deliverar.pagos.adapters.rest.messaging.events.EventType;
 import com.deliverar.pagos.adapters.rest.messaging.events.IncomingEvent;
-import com.deliverar.pagos.domain.entities.Owner;
-import com.deliverar.pagos.domain.entities.Transaction;
-import com.deliverar.pagos.domain.usecases.owner.GetOwnerByEmail;
-import com.deliverar.pagos.domain.usecases.owner.GetOwnerCryptoTransactionsByDate;
+import com.deliverar.pagos.domain.entities.FiatTransaction;
+import com.deliverar.pagos.domain.usecases.user.GetAllFiatTransactionsByDate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -25,28 +22,24 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-public class GetUserCryptoTransactionsCommand extends AsyncBaseCommand {
+public class GetAllFiatTransactionsCommand extends AsyncBaseCommand {
 
-    private final GetOwnerByEmail getOwnerByEmailUseCase;
-    private final GetOwnerCryptoTransactionsByDate getOwnerCryptoTransactionsByDateUseCase;
+    private final GetAllFiatTransactionsByDate getAllFiatTransactionsByDateUseCase;
 
-    public GetUserCryptoTransactionsCommand(EventPublisher eventPublisher, GetOwnerByEmail getOwnerByEmailUseCase, GetOwnerCryptoTransactionsByDate getOwnerCryptoTransactionsByDateUseCase) {
+    public GetAllFiatTransactionsCommand(EventPublisher eventPublisher, GetAllFiatTransactionsByDate getAllFiatTransactionsByDateUseCase) {
         super(eventPublisher);
-        this.getOwnerByEmailUseCase = getOwnerByEmailUseCase;
-        this.getOwnerCryptoTransactionsByDateUseCase = getOwnerCryptoTransactionsByDateUseCase;
+        this.getAllFiatTransactionsByDateUseCase = getAllFiatTransactionsByDateUseCase;
     }
 
     @Override
     public boolean canHandle(EventType eventType) {
-        return EventType.GET_USER_CRYPTO_TRANSACTIONS_REQUEST.equals(eventType);
+        return EventType.GET_ALL_FIAT_TRANSACTIONS_REQUEST.equals(eventType);
     }
 
     @Override
     protected boolean validate(IncomingEvent event) {
         try {
             Map<String, Object> payload = event.getPayload();
-            ValidationUtils.validateRequiredFields(payload, "email");
-            ValidationUtils.validateEmailFormat((String) payload.get("email"));
             
             // Validate transactionDateSince if present (optional)
             if (payload.containsKey("transactionDateSince") && payload.get("transactionDateSince") != null) {
@@ -68,33 +61,29 @@ public class GetUserCryptoTransactionsCommand extends AsyncBaseCommand {
     protected CommandResult process(IncomingEvent event) {
         try {
             Map<String, Object> payload = event.getPayload();
-            String email = (String) payload.get("email");
 
-            log.info("Get user crypto transactions request initiated for email: {}", email);
+            log.info("Get all fiat transactions request initiated");
 
             // Start async processing to get transactions and publish result
             processAsyncWithErrorHandling(() -> {
-                processGetUserCryptoTransactions(email, payload, event);
-            }, event, "get user crypto transactions");
+                processGetAllFiatTransactions(payload, event);
+            }, event, "get all fiat transactions");
 
             // Return immediate success - the actual result will be published asynchronously
-            return CommandResult.buildSuccess(null, "Get user crypto transactions request initiated successfully");
+            return CommandResult.buildSuccess(null, "Get all fiat transactions request initiated successfully");
 
         } catch (Exception e) {
-            log.error("Error processing get user crypto transactions command", e);
-            return CommandResult.buildFailure("Failed to process get user crypto transactions request: " + e.getMessage());
+            log.error("Error processing get all fiat transactions command", e);
+            return CommandResult.buildFailure("Failed to process get all fiat transactions request: " + e.getMessage());
         }
     }
 
     /**
-     * Asynchronously processes the get user crypto transactions and publishes the result
+     * Asynchronously processes the get all fiat transactions and publishes the result
      */
-    private void processGetUserCryptoTransactions(String email, Map<String, Object> originalData, IncomingEvent originalEvent) {
+    private void processGetAllFiatTransactions(Map<String, Object> originalData, IncomingEvent originalEvent) {
         try {
-            log.info("Starting to get crypto transactions for email: {}", email);
-
-            // Validate owner exists using ValidationUtils
-            Owner owner = ValidationUtils.validateOwnerExists(getOwnerByEmailUseCase, email);
+            log.info("Starting to get all fiat transactions");
 
             // Parse transactionDateSince (optional)
             Optional<Instant> sinceDate = Optional.empty();
@@ -102,13 +91,13 @@ public class GetUserCryptoTransactionsCommand extends AsyncBaseCommand {
                 String dateStr = originalData.get("transactionDateSince").toString();
                 if (!dateStr.isEmpty()) {
                     sinceDate = Optional.of(Instant.parse(dateStr));
-                    log.info("Filtering crypto transactions since: {}", sinceDate.get());
+                    log.info("Filtering all fiat transactions since: {}", sinceDate.get());
                 }
             }
 
-            // Get transactions using the new use case with date filtering
-            Page<Transaction> transactionsPage = getOwnerCryptoTransactionsByDateUseCase.get(
-                    owner, sinceDate, 0, Integer.MAX_VALUE, Sort.Direction.DESC);
+            // Get all transactions using the new use case with date filtering
+            Page<FiatTransaction> transactionsPage = getAllFiatTransactionsByDateUseCase.get(
+                    sinceDate, 0, Integer.MAX_VALUE, Sort.Direction.DESC);
 
             // Convert transactions to response format
             List<Map<String, Object>> transactionsList = transactionsPage.getContent().stream()
@@ -117,48 +106,49 @@ public class GetUserCryptoTransactionsCommand extends AsyncBaseCommand {
 
             // Build response according to documentation (exact fields)
             Map<String, Object> response = ResponseBuilder.createResponse(originalData,
-                    "email", email,
                     "transactions", transactionsList,
                     "transactionDateSince", originalData.getOrDefault("transactionDateSince", "")
             );
 
             // Publish success response
-            publishSuccessResponse(originalEvent, EventType.GET_USER_CRYPTO_TRANSACTIONS_RESPONSE, response);
-            log.info("Get user crypto transactions response published successfully for email: {}", email);
+            publishSuccessResponse(originalEvent, EventType.GET_ALL_FIAT_TRANSACTIONS_RESPONSE, response);
+            log.info("Get all fiat transactions response published successfully");
 
         } catch (Exception e) {
-            log.error("Error in async get user crypto transactions for email: {}", email, e);
-            publishErrorResponse(originalEvent, "Failed to get user crypto transactions: " + e.getMessage());
+            log.error("Error in async get all fiat transactions", e);
+            publishErrorResponse(originalEvent, "Failed to get all fiat transactions: " + e.getMessage());
         }
     }
 
     /**
-     * Converts a Transaction entity to a Map for the response
+     * Converts a FiatTransaction entity to a Map for the response
      */
-    private Map<String, Object> convertTransactionToMap(Transaction transaction) {
+    private Map<String, Object> convertTransactionToMap(FiatTransaction transaction) {
         return Map.of(
-                "id", transaction.getId().toString(),
-                "fromEmail", transaction.getOriginOwner().getEmail(),
-                "toEmail", transaction.getDestinationOwner().getEmail(),
+                "email", transaction.getOwner().getEmail(),
                 "amount", transaction.getAmount().toString(),
-                "concept", transaction.getConcept(),
+                "concept", transaction.getConcept().name(),
                 "type", getTransactionType(transaction),
                 "status", transaction.getStatus().name(),
-                "blockchainTxHash", transaction.getBlockchainTxHash(),
                 "transactionDate", transaction.getTransactionDate().toString()
         );
     }
 
-    private String getTransactionType(Transaction transaction) {
+    private String getTransactionType(FiatTransaction transaction) {
         if (transaction.getConcept() != null) {
-            if (transaction.getConcept().contains("BUY")) {
-                return "BUY";
-            } else if (transaction.getConcept().contains("SELL")) {
-                return "SELL";
-            } else if (transaction.getConcept().contains("TRANSFER") || transaction.getConcept().contains("PAYMENT")) {
-                return "PAYMENT";
+            switch (transaction.getConcept()) {
+                case DEPOSIT:
+                    return "DEPOSIT";
+                case WITHDRAWAL:
+                    return "WITHDRAWAL";
+                case PAYMENT:
+                    return "PAYMENT";
+                case RECEIPT:
+                    return "RECEIPT";
+                default:
+                    return transaction.getConcept().name();
             }
         }
         return "PAYMENT"; // Default type
     }
-} 
+}

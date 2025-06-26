@@ -26,7 +26,7 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class BuyCryptoCommand extends BaseCommand {
+public class SellCryptoCommand extends BaseCommand {
 
     private final GetOwnerByEmail getOwnerByEmailUseCase;
     private final DeliverCoinService deliverCoinService;
@@ -37,7 +37,7 @@ public class BuyCryptoCommand extends BaseCommand {
 
     @Override
     public boolean canHandle(EventType eventType) {
-        return EventType.BUY_CRYPTO_REQUEST.equals(eventType);
+        return EventType.SELL_CRYPTO_REQUEST.equals(eventType);
     }
 
     @Override
@@ -62,9 +62,9 @@ public class BuyCryptoCommand extends BaseCommand {
                 return CommandResult.buildFailure("Owner not found with email: " + email);
             }
 
-            // Process the crypto purchase using the service (returns transaction ID)
-            UUID transactionId = deliverCoinService.buyCryptoWithFiat(email, amount);
-            log.info("Buy crypto transaction initiated with ID: {}", transactionId);
+            // Process the crypto sale using the service (returns transaction ID)
+            UUID transactionId = deliverCoinService.sellCryptoForFiat(email, amount);
+            log.info("Sell crypto transaction initiated with ID: {}", transactionId);
 
             // Start async processing to wait for final status and publish result
             CompletableFuture.runAsync(() -> {
@@ -72,11 +72,11 @@ public class BuyCryptoCommand extends BaseCommand {
             });
 
             // Return immediate success - the actual result will be published asynchronously when final status is reached
-            return CommandResult.buildSuccess(null, "Crypto purchase initiated successfully");
+            return CommandResult.buildSuccess(null, "Crypto sale initiated successfully");
 
         } catch (Exception e) {
-            log.error("Error processing buy crypto command", e);
-            return CommandResult.buildFailure("Failed to process crypto purchase: " + e.getMessage());
+            log.error("Error processing sell crypto command", e);
+            return CommandResult.buildFailure("Failed to process crypto sale: " + e.getMessage());
         }
     }
 
@@ -93,7 +93,7 @@ public class BuyCryptoCommand extends BaseCommand {
 
             if (transaction.getStatus() == TransactionStatus.FAILURE) {
                 log.info("Transaction {} reached FAILURE status, publishing error response", transactionId);
-                publishErrorResponse("Crypto purchase failed: Transaction failed on blockchain", originalEvent);
+                publishErrorResponse("Crypto sale failed: Transaction failed on blockchain", originalEvent);
                 return;
             }
 
@@ -110,7 +110,6 @@ public class BuyCryptoCommand extends BaseCommand {
 
             // Build response according to documentation
             Map<String, Object> response = new java.util.HashMap<>();
-            response.put("transactionId", transaction.getId().toString());
             response.put("email", email);
             response.put("cryptoAmount", amount); // 1:1 conversion rate
             response.put("status", transaction.getStatus().name());
@@ -127,16 +126,16 @@ public class BuyCryptoCommand extends BaseCommand {
             // Publish success response only when final status is reached
             OutgoingEvent successEvent = OutgoingEvent.buildResponse(
                     originalEvent,
-                    EventType.BUY_CRYPTO_RESPONSE,
+                    EventType.SELL_CRYPTO_RESPONSE,
                     response,
                     EventStatus.SUCCESS
             );
             eventPublisher.publish(successEvent);
-            log.info("Buy crypto response published successfully for transaction ID: {}", transactionId);
+            log.info("Sell crypto response published successfully for transaction ID: {}", transactionId);
 
         } catch (Exception e) {
             log.error("Error in async transaction processing for ID: {}", transactionId, e);
-            publishErrorResponse("Failed to process crypto purchase: " + e.getMessage(), originalEvent);
+            publishErrorResponse("Failed to process crypto sale: " + e.getMessage(), originalEvent);
         }
     }
 
@@ -183,4 +182,4 @@ public class BuyCryptoCommand extends BaseCommand {
 
         throw new RuntimeException("Timeout waiting for transaction " + transactionId + " to reach final status");
     }
-} 
+}

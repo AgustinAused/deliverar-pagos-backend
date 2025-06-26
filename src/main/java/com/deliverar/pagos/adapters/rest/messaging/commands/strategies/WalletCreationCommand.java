@@ -2,7 +2,6 @@ package com.deliverar.pagos.adapters.rest.messaging.commands.strategies;
 
 import com.deliverar.pagos.adapters.rest.messaging.commands.AsyncBaseCommand;
 import com.deliverar.pagos.adapters.rest.messaging.commands.CommandResult;
-import com.deliverar.pagos.adapters.rest.messaging.commands.utils.OwnerTypeUtils;
 import com.deliverar.pagos.adapters.rest.messaging.commands.utils.ResponseBuilder;
 import com.deliverar.pagos.adapters.rest.messaging.commands.utils.ValidationUtils;
 import com.deliverar.pagos.adapters.rest.messaging.core.EventPublisher;
@@ -30,15 +29,17 @@ public class WalletCreationCommand extends AsyncBaseCommand {
 
     @Override
     public boolean canHandle(EventType eventType) {
-        return EventType.WALLET_CREATION_REQUEST.equals(eventType);
+        return EventType.TENANT_CREATION_REQUEST.equals(eventType)
+                || EventType.DELIVERY_USER_CREATED_REQUEST.equals(eventType)
+                || EventType.WALLET_CREATION_REQUEST.equals(eventType);
     }
 
     @Override
     protected boolean validate(IncomingEvent event) {
         try {
-            Map<String, Object> data = event.getData();
-            ValidationUtils.validateRequiredFields(data, "name", "email");
-            ValidationUtils.validateEmailFormat((String) data.get("email"));
+            Map<String, Object> payload = event.getPayload();
+            ValidationUtils.validateRequiredFields(payload, "name", "email");
+            ValidationUtils.validateEmailFormat((String) payload.get("email"));
             return true;
         } catch (IllegalArgumentException e) {
             log.warn("Validation failed: {}", e.getMessage());
@@ -49,45 +50,46 @@ public class WalletCreationCommand extends AsyncBaseCommand {
     @Override
     protected CommandResult process(IncomingEvent event) {
         try {
-            Map<String, Object> data = event.getData();
-            String name = (String) data.get("name");
-            String email = (String) data.get("email");
+            Map<String, Object> payload = event.getPayload();
+            String name = (String) payload.get("name");
+            String email = (String) payload.get("email");
 
-            log.info("Wallet creation request initiated for email: {}", email);
+            log.info("User creation request initiated for email: {}", email);
 
-            // Start async processing to create wallet and publish result
+            // Start async processing to create user and publish result
             processAsyncWithErrorHandling(() -> {
-                processWalletCreation(name, email, data, event);
-            }, event, "wallet creation");
+                processUserCreation(name, email, payload, event);
+            }, event, "user creation");
 
             // Return immediate success - the actual result will be published asynchronously
-            return CommandResult.buildSuccess(null, "Wallet creation request initiated successfully");
+            return CommandResult.buildSuccess(null, "User creation request initiated successfully");
 
         } catch (Exception e) {
-            log.error("Error processing wallet creation command", e);
-            return CommandResult.buildFailure("Failed to process wallet creation request: " + e.getMessage());
+            log.error("Error processing user creation command", e);
+            return CommandResult.buildFailure("Failed to process user creation request: " + e.getMessage());
         }
     }
 
     /**
-     * Asynchronously processes the wallet creation and publishes the result
+     * Asynchronously processes the user creation and publishes the result
      */
-    private void processWalletCreation(String name, String email, Map<String, Object> originalData, IncomingEvent originalEvent) {
+    private void processUserCreation(String name, String email, Map<String, Object> originalData, IncomingEvent originalEvent) {
         try {
-            log.info("Starting to create wallet for email: {}", email);
+            log.info("Starting to create user for email: {}", email);
 
-            // Determine owner type based on origin module
-            OwnerType ownerType = OwnerTypeUtils.determineOwnerType(originalData);
+            OwnerType ownerType = EventType.TENANT_CREATION_REQUEST.getTopic()
+                    .equals(originalEvent.getTopic()) ? OwnerType.LEGAL : OwnerType.NATURAL;
+
             log.info("Creating owner with type: {} for email: {}", ownerType, email);
 
             // Get initial balances using ValidationUtils
             BigDecimal initialFiatBalance = ValidationUtils.parseBigDecimal(originalData, "initialFiatBalance", BigDecimal.ZERO);
             BigDecimal initialCryptoBalance = BigDecimal.ZERO;
 
-            // Create owner with wallet using the use case
+            // Create owner using the use case
             Owner owner = createOwnerUseCase.create(name, email, ownerType, initialFiatBalance, initialCryptoBalance);
 
-            // Build response using ResponseBuilder
+            // Build response using ResponseBuilder - both user.creation and wallet.creation publish wallet.creation.response
             Map<String, Object> response = ResponseBuilder.createResponse(originalData,
                     "name", owner.getName(),
                     "email", owner.getEmail(),
@@ -96,11 +98,11 @@ public class WalletCreationCommand extends AsyncBaseCommand {
 
             // Publish success response
             publishSuccessResponse(originalEvent, EventType.WALLET_CREATION_RESPONSE, response);
-            log.info("Wallet creation response published successfully for email: {}", email);
+            log.info("User creation response published successfully for email: {}", email);
 
         } catch (Exception e) {
-            log.error("Error in async wallet creation for email: {}", email, e);
-            publishErrorResponse(originalEvent, "Failed to create wallet: " + e.getMessage());
+            log.error("Error in async user creation for email: {}", email, e);
+            publishErrorResponse(originalEvent, "Failed to create user: " + e.getMessage());
         }
     }
-} 
+}

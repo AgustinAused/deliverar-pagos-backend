@@ -8,7 +8,7 @@ import java.util.Map;
 @Data
 public abstract class Event {
     private String topic;
-    private Map<String, Object> data;
+    private Map<String, Object> payload;
     private String eventId;
     private LocalDateTime timestamp;
 
@@ -17,9 +17,9 @@ public abstract class Event {
         this.timestamp = LocalDateTime.now();
     }
 
-    public Event(String topic, Map<String, Object> data) {
+    public Event(String topic, Map<String, Object> payload) {
         this.topic = topic;
-        this.data = data;
+        this.payload = payload;
         this.eventId = java.util.UUID.randomUUID().toString();
         this.timestamp = LocalDateTime.now();
     }

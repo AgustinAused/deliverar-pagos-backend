@@ -38,12 +38,12 @@ public class FiatPaymentCommand extends AsyncBaseCommand {
     @Override
     protected boolean validate(IncomingEvent event) {
         try {
-            Map<String, Object> data = event.getData();
-            ValidationUtils.validateRequiredFields(data, "fromEmail", "toEmail", "amount");
-            ValidationUtils.validateEmailFormat((String) data.get("fromEmail"));
-            ValidationUtils.validateEmailFormat((String) data.get("toEmail"));
+            Map<String, Object> payload = event.getPayload();
+            ValidationUtils.validateRequiredFields(payload, "fromEmail", "toEmail", "amount");
+            ValidationUtils.validateEmailFormat((String) payload.get("fromEmail"));
+            ValidationUtils.validateEmailFormat((String) payload.get("toEmail"));
             
-            BigDecimal amount = ValidationUtils.parseBigDecimal(data, "amount", BigDecimal.ZERO);
+            BigDecimal amount = ValidationUtils.parseBigDecimal(payload, "amount", BigDecimal.ZERO);
             ValidationUtils.validatePositiveAmount(amount, "amount");
             
             return true;
@@ -56,16 +56,16 @@ public class FiatPaymentCommand extends AsyncBaseCommand {
     @Override
     protected CommandResult process(IncomingEvent event) {
         try {
-            Map<String, Object> data = event.getData();
-            String fromEmail = (String) data.get("fromEmail");
-            String toEmail = (String) data.get("toEmail");
-            BigDecimal amount = ValidationUtils.parseBigDecimal(data, "amount", BigDecimal.ZERO);
+            Map<String, Object> payload = event.getPayload();
+            String fromEmail = (String) payload.get("fromEmail");
+            String toEmail = (String) payload.get("toEmail");
+            BigDecimal amount = ValidationUtils.parseBigDecimal(payload, "amount", BigDecimal.ZERO);
 
             log.info("Fiat payment request initiated from {} to {} with amount: {}", fromEmail, toEmail, amount);
 
             // Start async processing to process payment and publish result
             processAsyncWithErrorHandling(() -> {
-                processFiatPayment(fromEmail, toEmail, amount, data, event);
+                processFiatPayment(fromEmail, toEmail, amount, payload, event);
             }, event, "fiat payment");
 
             // Return immediate success - the actual result will be published asynchronously
@@ -91,7 +91,7 @@ public class FiatPaymentCommand extends AsyncBaseCommand {
             // Process the transfer using the new use case
             payWithFiatUseCase.pay(fromOwner, toOwner, amount);
 
-            // Get updated owner data to get current balances
+            // Get updated owner payload to get current balances
             Owner updatedFromOwner = ValidationUtils.validateOwnerExists(getOwnerByEmailUseCase, fromEmail);
 
             // Build response according to documentation

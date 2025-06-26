@@ -11,8 +11,8 @@ public class IncomingEvent extends Event {
     private String correlationId;
     private String source;
     
-    public IncomingEvent(String topic, Map<String, Object> data, String correlationId, String source) {
-        super(topic, data);
+    public IncomingEvent(String topic, Map<String, Object> payload, String correlationId, String source) {
+        super(topic, payload);
         this.correlationId = correlationId;
         this.source = source;
     }

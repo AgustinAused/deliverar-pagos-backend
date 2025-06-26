@@ -24,7 +24,7 @@ public class EventPublisher {
 
             ImmutableEvent hubEvent = new ImmutableEvent(
                     event.getTopic(),
-                    event.getData()
+                    event.getPayload()
             );
 
             hubPublisher.publish(hubEvent)

@@ -4,6 +4,6 @@ import java.util.Map;
 
 public record ImmutableEvent(
         String topic,
-        Map<String, Object> data
+        Map<String, Object> payload
 ) {
 }

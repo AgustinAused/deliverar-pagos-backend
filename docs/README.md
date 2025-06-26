@@ -1,131 +1,254 @@
-# Documentación del Proyecto Deliverar Pagos
+# Event test
 
-Este directorio contiene toda la documentación técnica del proyecto, incluyendo arquitectura, diagramas y guías de implementación.
+1. [x] Delivery user created
 
-## Archivos de Documentación
+````bash
+curl --location 'http://localhost:8080/callback' \
+--header 'x-topic: delivery.user.created' \
+--header 'Content-Type: application/json' \
+--data '{
+    "name": "Fernanda Salinas",
+    "email": "fernanda@example.com"
+  }'
+````
 
-### 📋 Arquitectura y Diseño
+2. [x]    Delivery wallet deletion
 
-- **[event-driven-architecture.md](./event-driven-architecture.md)** - Documentación completa de la arquitectura basada en eventos
-- **[event-flow-diagram.puml](./event-flow-diagram.puml)** - Diagrama de componentes de la arquitectura (PlantUML)
-- **[event-sequence-diagram.puml](./event-sequence-diagram.puml)** - Diagrama de secuencia del flujo de eventos (PlantUML)
-- **[event-class-diagram.puml](./event-class-diagram.puml)** - Diagrama de clases de la implementación (PlantUML)
-- **[implementation-example.md](./implementation-example.md)** - Ejemplo de implementación con código Java
+````bash
+curl --location 'http://localhost:8080/callback' \
+--header 'x-topic: wallet.deletion.request' \
+--header 'Content-Type: application/json' \
+--data '{
+    "email": "fernanda@example.com"
+}'
+````
 
-### 📝 Especificación de Eventos
+3. [x] Tenant created (con saldo inicial de fiat)
 
-- **[events/](./events/)** - Directorio completo con ejemplos JSON de todos los eventos
-  - **[events/entrada/](events/input/)** - 13 eventos de entrada con ejemplos JSON
-  - **[events/salida/](events/output/)** - 14 eventos de salida con ejemplos JSON
-  - **[events/README.md](./events/README.md)** - Documentación detallada de cada evento
+````bash
+curl --location 'http://localhost:8080/callback' \
+--header 'x-topic: tenant.created' \
+--header 'Content-Type: application/json' \
+--data '{
+    "traceData" : {
+      "originModule" : "marketplace-service",
+      "traceId" : "123123"
+    },
+    "name": "María Gómez",
+    "email": "maria.gomez@example.com",
+    "initialFiatBalance": 10000
+  }'
+````
 
-### 🎯 Patrones de Diseño Implementados
+4. [x] Wallet creation (con saldo inicial de fiat)
 
-1. **Event-Driven Architecture (EDA)**
+````bash
+curl --location 'http://localhost:8080/callback' \
+--header 'x-topic: wallet.creation.request' \
+--header 'Content-Type: application/json' \
+--data '{
+    "traceData" : {
+      "originModule" : "module-name",
+      "traceId" : "xxx"
+    },
+    "name": "Juan Pérez",
+    "email": "juan.perez@example.com",
+    "initialFiatBalance": 5000
+  }'
+````
 
-   - Event Handler Pattern
-   - Event Publisher Pattern
-   - Event Router
+5. [x]    Fiat deposit
 
-2. **Command Pattern**
+```bash
+curl --location 'http://localhost:8080/callback' \
+--header 'x-topic: fiat.deposit.request' \
+--header 'Content-Type: application/json' \
+--data '{
+    "traceData" : {
+      "originModule" : "module-name",
+      "traceId" : "xxx"
+    },
+    "email": "juan.perez@example.com",
+    "amount": 500,
+    "concept": "Depósito bancario"
+}'
+```
 
-   - Encapsula acciones de negocio
-   - Desacopla lógica de eventos
+6. [x]    Fiat Payment
 
-3. **Strategy Pattern**
+```bash
+curl --location 'http://localhost:8080/callback' \
+--header 'x-topic: fiat.payment.request' \
+--header 'Content-Type: application/json' \
+--data '{
+    "traceData" : {
+      "originModule" : "module-name",
+      "traceId" : "xxx"
+    },
+    "fromEmail": "juan.perez@example.com",
+    "toEmail": "maria.gomez@example.com",
+    "amount": 250.00,
+    "concept": "Pago de factura"
+}'
+```
 
-   - Maneja diferentes tipos de eventos
-   - Permite extensibilidad
+7. [x]    Fiat Withdrawal
 
-4. **Observer Pattern**
-   - Notifica múltiples componentes
-   - Mantiene desacoplamiento
+```bash
+curl --location 'http://localhost:8080/callback' \
+--header 'x-topic: fiat.withdrawal.request' \
+--header 'Content-Type: application/json' \
+--data '{
+    "traceData" : {
+      "originModule" : "module-name",
+      "traceId" : "xxx"
+    },
+    "email": "juan.perez@example.com",
+    "amount": 100.00,
+    "concept": "Retiro a cuenta bancaria"        
+}'
+```
 
-## Cómo Visualizar los Diagramas
+8. [x]    Buy Crypto
 
-### PlantUML
+```bash
+curl --location 'http://localhost:8080/callback' \
+--header 'x-topic: buy.crypto.request' \
+--header 'Content-Type: application/json' \
+--data '{
+    "traceData" : {
+      "originModule" : "module-name",
+      "traceId" : "xxx"
+    },
+    "email": "juan.perez@example.com",
+    "amount": 50.00
+}'
+```
 
-Los archivos `.puml` pueden ser visualizados usando:
+9. [x]    Crypto Payment
 
-1. **PlantUML Online**: https://www.plantuml.com/plantuml/uml/
-2. **VS Code Extension**: PlantUML
-3. **IntelliJ IDEA Plugin**: PlantUML integration
+```bash
+curl --location 'http://localhost:8080/callback' \
+--header 'x-topic: crypto.payment.request' \
+--header 'Content-Type: application/json' \
+--data '{
+    "traceData" : {
+      "originModule" : "module-name",
+      "traceId" : "xxx"
+    },
+    "fromEmail": "juan.perez@example.com",
+    "toEmail": "maria.gomez@example.com",
+    "amount": 100.50,
+    "concept": "Pago por servicios"    
+}'
+```
 
-### Mermaid
+10. [x]    Sell Crypto
 
-Los diagramas en formato Mermaid pueden ser visualizados en:
+```bash
+curl --location 'http://localhost:8080/callback' \
+--header 'x-topic: sell.crypto.request' \
+--header 'Content-Type: application/json' \
+--data '{
+    "traceData" : {
+      "originModule" : "module-name",
+      "traceId" : "xxx"
+    },
+    "email": "juan.perez@example.com",
+    "amount": 25.00
+}'
+```
 
-- GitHub (se renderizan automáticamente)
-- Mermaid Live Editor: https://mermaid.live/
+11. [x]    Get Balances
 
-## Estructura de Eventos
+```bash
+curl --location 'http://localhost:8080/callback' \
+--header 'x-topic: get.balances.request' \
+--header 'Content-Type: application/json' \
+--data '{
+    "traceData" : {
+      "originModule" : "module-name",
+      "traceId" : "xxx"
+    },
+    "email": "juan.perez@example.com"
+}'
+```
 
-### Eventos de Entrada (13 eventos)
+12. [x]    Get User Crypto Transactions
 
-1. `USER_CREATION_REQUEST` - Creación de usuario
-2. `USER_DELETION_REQUEST` - Eliminación de usuario
-3. `GET_BALANCES_REQUEST` - Obtener saldos
-4. `GET_USER_FIAT_TRANSACTIONS_REQUEST` - Obtener transacciones fiat de usuario
-5. `GET_USER_CRYPTO_TRANSACTIONS_REQUEST` - Obtener transacciones crypto de usuario
-6. `FIAT_DEPOSIT_REQUEST` - Ingreso de fiat
-7. `FIAT_WITHDRAWAL_REQUEST` - Extracción de fiat
-8. `FIAT_PAYMENT_REQUEST` - Pago con fiat
-9. `CRYPTO_PAYMENT_REQUEST` - Pago con crypto
-10. `BUY_CRYPTO_REQUEST` - Compra de crypto
-11. `SELL_CRYPTO_REQUEST` - Venta de crypto
-12. `GET_ALL_FIAT_TRANSACTIONS_REQUEST` - Obtener transacciones fiat (sin discriminar por usuario)
-13. `GET_ALL_CRYPTO_TRANSACTIONS_REQUEST` - Obtener transacciones crypto (sin discriminar por usuario)
+```bash
+curl --location 'http://localhost:8080/callback' \
+--header 'x-topic: get.user.crypto.transactions.request' \
+--header 'Content-Type: application/json' \
+--data '{
+    "traceData" : {
+      "originModule" : "module-name",
+      "traceId" : "xxx"
+    },
+    "email": "juan.perez@example.com",
+    "transactionDateSince": "2024-01-01T09:15:00Z"         
+}'
+```
 
-### Eventos de Salida (14 eventos)
+13. [x]    Get User Fiat Transactions
 
-- `USER_CREATION_RESPONSE`
-- `USER_DELETION_RESPONSE`
-- `GET_BALANCES_RESPONSE`
-- `GET_USER_FIAT_TRANSACTIONS_RESPONSE`
-- `GET_USER_CRYPTO_TRANSACTIONS_RESPONSE`
-- `FIAT_DEPOSIT_RESPONSE`
-- `FIAT_WITHDRAWAL_RESPONSE`
-- `FIAT_PAYMENT_RESPONSE`
-- `CRYPTO_PAYMENT_RESPONSE`
-- `BUY_CRYPTO_RESPONSE`
-- `SELL_CRYPTO_RESPONSE`
-- `GET_ALL_FIAT_TRANSACTIONS_RESPONSE`
-- `GET_ALL_CRYPTO_TRANSACTIONS_RESPONSE`
-- `ERROR_RESPONSE`
+```bash
+curl --location 'http://localhost:8080/callback' \
+--header 'x-topic: get.user.fiat.transactions.request' \
+--header 'Content-Type: application/json' \
+--data '{
+    "traceData" : {
+      "originModule" : "module-name",
+      "traceId" : "xxx"
+    },
+    "email": "juan.perez@example.com",
+    "transactionDateSince": "2024-01-01T09:15:00Z"        
+}'
+```
 
-## Ventajas de la Arquitectura
+14. [x] GetAllCryptoTransactions
 
-1. **Desacoplamiento**: Los componentes no dependen directamente entre sí
-2. **Escalabilidad**: Fácil agregar nuevos tipos de eventos
-3. **Mantenibilidad**: Lógica de negocio separada de infraestructura
-4. **Testabilidad**: Cada componente puede ser testeado independientemente
-5. **Extensibilidad**: Nuevos handlers pueden ser agregados sin modificar código existente
+```bash
+curl --location 'http://localhost:8080/callback' \
+--header 'x-topic: get.all.crypto.transactions.request' \
+--header 'Content-Type: application/json' \
+--data '{
+    "traceData" : {
+      "originModule" : "module-name",
+      "traceId" : "xxx"
+    },
+    "transactionDateSince": "2024-01-01T09:15:00Z"
+  }
+}'
+```
 
-## Flujo de Procesamiento
+15. [x] GetAllFiatTransactions
 
-1. **Recepción**: El `CallbackController` recibe eventos del Hub externo
-2. **Enrutamiento**: El `EventRouter` dirige el evento al handler apropiado
-3. **Procesamiento**: El `EventHandler` ejecuta el comando correspondiente
-4. **Lógica de Negocio**: El `Command` ejecuta la lógica específica usando los Use Cases existentes
-5. **Respuesta**: El `EventPublisher` publica el evento de respuesta al Hub
+```bash
+curl --location 'http://localhost:8080/callback' \
+--header 'x-topic: get.all.fiat.transactions.request' \
+--header 'Content-Type: application/json' \
+--data '{
+    "traceData" : {
+      "originModule" : "module-name",
+      "traceId" : "xxx"
+    },
+    "transactionDateSince": "2025-06-26T02:58:20.105769Z"      
+}'
+```
 
-## Próximos Pasos
+## Commands
 
-1. ✅ Crear documentación de arquitectura
-2. ✅ Definir eventos específicos del dominio
-3. ✅ Implementar estructura base de eventos
-4. ✅ Crear documentación de eventos con ejemplos JSON
-5. 🔄 Crear handlers para eventos existentes
-6. ⏳ Migrar lógica de negocio a comandos
-7. ⏳ Implementar sistema de métricas
-8. ⏳ Agregar tests unitarios y de integración
-
-## Contribución
-
-Al agregar nueva documentación:
-
-1. Mantén la consistencia en el formato
-2. Incluye diagramas cuando sea apropiado
-3. Actualiza este README si agregas nuevos archivos
-4. Usa PlantUML para diagramas técnicos complejos
-5. Usa Mermaid para diagramas simples en markdown
+1. WalletCreationCommand (client, tenant and marketplace)
+2. WalletDeletionCommand
+3. BuyCryptoCommand
+4. SellCryptoCommand
+5. CryptoPaymentCommand
+6. FiatDepositCommand
+7. FiatPaymentCommand
+8. FiatWithdrawalCommand
+9. GetBalancesCommand
+10. GetUserCryptoTransactionsCommand
+11. GetUserFiatTransactionsCommand
+12. GetAllCryptoTransactionsCommand
+13. GetAllFiatTransactionsCommand

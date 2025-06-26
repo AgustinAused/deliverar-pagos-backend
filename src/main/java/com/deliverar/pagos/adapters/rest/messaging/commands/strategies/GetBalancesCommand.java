@@ -31,15 +31,15 @@ public class GetBalancesCommand extends BaseCommand {
 
     @Override
     protected boolean validate(IncomingEvent event) {
-        Map<String, Object> data = event.getData();
-        return data != null && data.containsKey("email");
+        Map<String, Object> payload = event.getPayload();
+        return payload != null && payload.containsKey("email");
     }
 
     @Override
     protected CommandResult process(IncomingEvent event) {
         try {
-            Map<String, Object> data = event.getData();
-            String email = (String) data.get("email");
+            Map<String, Object> payload = event.getPayload();
+            String email = (String) payload.get("email");
 
             // Validate owner
             var ownerOptional = getOwnerByEmailUseCase.get(email);
@@ -87,8 +87,8 @@ public class GetBalancesCommand extends BaseCommand {
             response.put("lastUpdated", owner.getWallet().getUpdatedAt().toString());
 
             // Add traceData if present in the request
-            if (originalEvent.getData().containsKey("traceData")) {
-                response.put("traceData", originalEvent.getData().get("traceData"));
+            if (originalEvent.getPayload().containsKey("traceData")) {
+                response.put("traceData", originalEvent.getPayload().get("traceData"));
             }
 
             // Publish success response

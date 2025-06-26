@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/callback")
 public class CallbackController {
@@ -44,14 +46,15 @@ public class CallbackController {
     })
     @PostMapping
     public ResponseEntity<Void> receiveEvent(
-            @Parameter(description = "Payload del evento") @RequestBody ImmutableEvent event) {
+            @Parameter(description = "Payload del evento") @RequestBody Map<String, Object> payload,
+            @RequestHeader("x-topic") String topic) {
         try {
-            log.info("Evento recibido del hub: {}", event);
+            log.info("Evento recibido del hub: topic {} - payload {}", topic, payload);
 
             // Publicar evento interno para procesamiento asíncrono
             Event internalEvent = Event.builder()
-                    .topic(event.topic())
-                    .data(event.data())
+                    .topic(topic)
+                    .payload(payload)
                     .build();
 
             applicationEventPublisher.publishEvent(internalEvent);

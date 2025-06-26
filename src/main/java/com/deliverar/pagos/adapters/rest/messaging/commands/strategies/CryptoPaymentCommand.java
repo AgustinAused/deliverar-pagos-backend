@@ -44,22 +44,22 @@ public class CryptoPaymentCommand extends BaseCommand {
 
     @Override
     protected boolean validate(IncomingEvent event) {
-        Map<String, Object> data = event.getData();
-        return data != null &&
-                data.containsKey("fromEmail") &&
-                data.containsKey("toEmail") &&
-                data.containsKey("amount");
+        Map<String, Object> payload = event.getPayload();
+        return payload != null &&
+                payload.containsKey("fromEmail") &&
+                payload.containsKey("toEmail") &&
+                payload.containsKey("amount");
     }
 
     @Override
     protected CommandResult process(IncomingEvent event) {
         try {
-            Map<String, Object> data = event.getData();
+            Map<String, Object> payload = event.getPayload();
 
-            String fromEmail = (String) data.get("fromEmail");
-            String toEmail = (String) data.get("toEmail");
-            BigDecimal amount = new BigDecimal(data.get("amount").toString());
-            String concept = (String) data.getOrDefault("concept", "Crypto payment");
+            String fromEmail = (String) payload.get("fromEmail");
+            String toEmail = (String) payload.get("toEmail");
+            BigDecimal amount = new BigDecimal(payload.get("amount").toString());
+            String concept = (String) payload.getOrDefault("concept", "Crypto payment");
 
             // Validate sender
             var fromOwnerOptional = getOwnerByEmailUseCase.get(fromEmail);
@@ -123,7 +123,7 @@ public class CryptoPaymentCommand extends BaseCommand {
 
             log.info("Transaction {} reached SUCCESS status, publishing success response", transactionId);
 
-            // Refresh sender data to get updated balances
+            // Refresh sender payload to get updated balances
             var fromOwnerOptional = getOwnerByEmailUseCase.get(fromEmail);
             if (fromOwnerOptional.isEmpty()) {
                 publishErrorResponse("Sender not found after transaction completion", originalEvent);
@@ -145,8 +145,8 @@ public class CryptoPaymentCommand extends BaseCommand {
             response.put("currentCryptoBalance", fromOwner.getWallet().getCryptoBalance());
 
             // Add traceData if present in the request
-            if (originalEvent.getData().containsKey("traceData")) {
-                response.put("traceData", originalEvent.getData().get("traceData"));
+            if (originalEvent.getPayload().containsKey("traceData")) {
+                response.put("traceData", originalEvent.getPayload().get("traceData"));
             }
 
             // Publish success response only when final status is reached

@@ -44,14 +44,14 @@ public class GetUserFiatTransactionsCommand extends AsyncBaseCommand {
     @Override
     protected boolean validate(IncomingEvent event) {
         try {
-            Map<String, Object> data = event.getData();
-            ValidationUtils.validateRequiredFields(data, "email");
-            ValidationUtils.validateEmailFormat((String) data.get("email"));
+            Map<String, Object> payload = event.getPayload();
+            ValidationUtils.validateRequiredFields(payload, "email");
+            ValidationUtils.validateEmailFormat((String) payload.get("email"));
             
             // Validate transactionDateSince if present (optional)
-            if (data.containsKey("transactionDateSince") && data.get("transactionDateSince") != null) {
-                log.info("Transaction dates since: {}", data.get("transactionDateSince"));
-                String dateStr = data.get("transactionDateSince").toString();
+            if (payload.containsKey("transactionDateSince") && payload.get("transactionDateSince") != null) {
+                log.info("Transaction dates since: {}", payload.get("transactionDateSince"));
+                String dateStr = payload.get("transactionDateSince").toString();
                 if (!dateStr.isEmpty()) {
                     Instant.parse(dateStr); // Validate date format
                 }
@@ -67,14 +67,14 @@ public class GetUserFiatTransactionsCommand extends AsyncBaseCommand {
     @Override
     protected CommandResult process(IncomingEvent event) {
         try {
-            Map<String, Object> data = event.getData();
-            String email = (String) data.get("email");
+            Map<String, Object> payload = event.getPayload();
+            String email = (String) payload.get("email");
 
             log.info("Get user fiat transactions request initiated for email: {}", email);
 
             // Start async processing to get transactions and publish result
             processAsyncWithErrorHandling(() -> {
-                processGetUserFiatTransactions(email, data, event);
+                processGetUserFiatTransactions(email, payload, event);
             }, event, "get user fiat transactions");
 
             // Return immediate success - the actual result will be published asynchronously

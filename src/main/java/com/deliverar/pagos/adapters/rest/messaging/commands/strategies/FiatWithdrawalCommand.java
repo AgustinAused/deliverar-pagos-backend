@@ -39,11 +39,11 @@ public class FiatWithdrawalCommand extends AsyncBaseCommand {
     @Override
     protected boolean validate(IncomingEvent event) {
         try {
-            Map<String, Object> data = event.getData();
-            ValidationUtils.validateRequiredFields(data, "email", "amount");
-            ValidationUtils.validateEmailFormat((String) data.get("email"));
+            Map<String, Object> payload = event.getPayload();
+            ValidationUtils.validateRequiredFields(payload, "email", "amount");
+            ValidationUtils.validateEmailFormat((String) payload.get("email"));
             
-            BigDecimal amount = ValidationUtils.parseBigDecimal(data, "amount", BigDecimal.ZERO);
+            BigDecimal amount = ValidationUtils.parseBigDecimal(payload, "amount", BigDecimal.ZERO);
             ValidationUtils.validatePositiveAmount(amount, "amount");
             
             return true;
@@ -56,15 +56,15 @@ public class FiatWithdrawalCommand extends AsyncBaseCommand {
     @Override
     protected CommandResult process(IncomingEvent event) {
         try {
-            Map<String, Object> data = event.getData();
-            String email = (String) data.get("email");
-            BigDecimal amount = ValidationUtils.parseBigDecimal(data, "amount", BigDecimal.ZERO);
+            Map<String, Object> payload = event.getPayload();
+            String email = (String) payload.get("email");
+            BigDecimal amount = ValidationUtils.parseBigDecimal(payload, "amount", BigDecimal.ZERO);
 
             log.info("Fiat withdrawal request initiated for email: {} with amount: {}", email, amount);
 
             // Start async processing to process withdrawal and publish result
             processAsyncWithErrorHandling(() -> {
-                processFiatWithdrawal(email, amount, data, event);
+                processFiatWithdrawal(email, amount, payload, event);
             }, event, "fiat withdrawal");
 
             // Return immediate success - the actual result will be published asynchronously
@@ -92,7 +92,7 @@ public class FiatWithdrawalCommand extends AsyncBaseCommand {
             // Process the withdrawal using the use case
             exchangeFiatUseCase.exchange(owner, amount, ExchangeOperation.OUTFLOW);
 
-            // Get updated owner data to get current balances
+            // Get updated owner payload to get current balances
             Owner updatedOwner = ValidationUtils.validateOwnerExists(getOwnerByEmailUseCase, email);
 
             // Build response according to documentation
