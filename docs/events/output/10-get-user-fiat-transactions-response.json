@@ -8,7 +8,7 @@
     "email": "juan.perez@example.com",
     "transactions": [
       {
-        "currentFiatBalance": 150.75",
+        "currentFiatBalance": 150.75,
         "concept": "Depósito bancario",
         "type": "DEPOSIT",
         "status": "SUCCESS",
