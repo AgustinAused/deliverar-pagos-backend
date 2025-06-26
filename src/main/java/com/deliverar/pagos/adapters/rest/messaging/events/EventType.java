@@ -8,12 +8,10 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public enum EventType {
     // Eventos de Entrada
-    USER_CREATION_REQUEST("user.creation.request"),
-    TENANT_CREATION_REQUEST("user.creation.request"),
-    DELIVERY_USER_CREATED_REQUEST("wallet.creation.request"),
+    TENANT_CREATION_REQUEST("tenant.created"),
+    DELIVERY_USER_CREATED_REQUEST("delivery.user.created"),
     WALLET_CREATION_REQUEST("wallet.creation.request"),
 
-    USER_DELETION_REQUEST("user.deletion.request"),
     WALLET_DELETION_REQUEST("wallet.deletion.request"),
     GET_BALANCES_REQUEST("get.balances.request"),
     GET_USER_FIAT_TRANSACTIONS_REQUEST("get.user.fiat.transactions.request"),
@@ -28,8 +26,6 @@ public enum EventType {
     GET_ALL_CRYPTO_TRANSACTIONS_REQUEST("get.all.crypto.transactions.request"),
 
     // Eventos de Salida
-    USER_CREATION_RESPONSE("user.creation.response"),
-    USER_DELETION_RESPONSE("user.deletion.response"),
     WALLET_CREATION_RESPONSE("wallet.creation.response"),
     WALLET_DELETION_RESPONSE("wallet.deletion.response"),
     GET_BALANCES_RESPONSE("get.balances.response"),

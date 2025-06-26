@@ -18,19 +18,18 @@ import java.util.Map;
 
 @Slf4j
 @Component
-public class UserCreationCommand extends AsyncBaseCommand {
+public class WalletCreationCommand extends AsyncBaseCommand {
 
     private final CreateOwner createOwnerUseCase;
 
-    public UserCreationCommand(EventPublisher eventPublisher, CreateOwner createOwnerUseCase) {
+    public WalletCreationCommand(EventPublisher eventPublisher, CreateOwner createOwnerUseCase) {
         super(eventPublisher);
         this.createOwnerUseCase = createOwnerUseCase;
     }
 
     @Override
     public boolean canHandle(EventType eventType) {
-        return EventType.USER_CREATION_REQUEST.equals(eventType)
-                || EventType.TENANT_CREATION_REQUEST.equals(eventType)
+        return EventType.TENANT_CREATION_REQUEST.equals(eventType)
                 || EventType.DELIVERY_USER_CREATED_REQUEST.equals(eventType)
                 || EventType.WALLET_CREATION_REQUEST.equals(eventType);
     }
