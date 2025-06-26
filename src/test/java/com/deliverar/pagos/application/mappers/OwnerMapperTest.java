@@ -48,7 +48,7 @@ class OwnerMapperTest {
                 .owner(owner)
                 .amount(new BigDecimal("67.89"))
                 .currency(CurrencyType.FIAT)
-                .concept(FiatTransactionConcept.DEPOSIT)
+                .concept(TransactionConcept.DEPOSIT)
                 .transactionDate(Instant.now())
                 .createdAt(Instant.now())
                 .status(TransactionStatus.SUCCESS)

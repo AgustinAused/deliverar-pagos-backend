@@ -32,6 +32,8 @@ class DefaultCreateOwnerTest {
     private final String name = "Jane Doe";
     private final String email = "jane.doe@example.com";
     private final OwnerType ownerType = OwnerType.NATURAL;
+    private final BigDecimal initialFiatBalance = BigDecimal.valueOf(1000);
+    private final BigDecimal initialCryptoBalance = BigDecimal.valueOf(100);
 
     @BeforeEach
     void setUp() {
@@ -47,8 +49,8 @@ class DefaultCreateOwnerTest {
                 .ownerType(ownerType)
                 .wallet(
                         Wallet.builder()
-                                .fiatBalance(BigDecimal.ZERO)
-                                .cryptoBalance(BigDecimal.ZERO)
+                                .fiatBalance(initialFiatBalance)
+                                .cryptoBalance(initialCryptoBalance)
                                 .createdAt(Instant.now())
                                 .updatedAt(Instant.now())
                                 .build()
@@ -56,7 +58,7 @@ class DefaultCreateOwnerTest {
                 .build();
         when(ownerRepository.save(any(Owner.class))).thenReturn(stubOwner);
 
-        Owner result = createOwner.create(name, email, ownerType);
+        Owner result = createOwner.create(name, email, ownerType, initialFiatBalance, initialCryptoBalance);
 
         assertEquals(stubOwner, result, "Expected the saved owner to be returned");
         ArgumentCaptor<Owner> captor = ArgumentCaptor.forClass(Owner.class);
@@ -67,8 +69,8 @@ class DefaultCreateOwnerTest {
         assertEquals(email, toSave.getEmail(), "Owner email should match input");
         assertEquals(ownerType, toSave.getOwnerType(), "OwnerType should match input");
         assertNotNull(toSave.getWallet(), "Wallet should be initialized");
-        assertEquals(BigDecimal.ZERO, toSave.getWallet().getFiatBalance(), "Initial fiat balance should be zero");
-        assertEquals(BigDecimal.ZERO, toSave.getWallet().getCryptoBalance(), "Initial crypto balance should be zero");
+        assertEquals(initialFiatBalance, toSave.getWallet().getFiatBalance(), "Initial fiat balance should match input");
+        assertEquals(initialCryptoBalance, toSave.getWallet().getCryptoBalance(), "Initial crypto balance should match input");
         assertNotNull(toSave.getWallet().getCreatedAt(), "Wallet creation time should be set");
         assertNotNull(toSave.getWallet().getUpdatedAt(), "Wallet update time should be set");
     }
@@ -76,21 +78,35 @@ class DefaultCreateOwnerTest {
     @Test
     void create_ShouldThrow_WhenNameIsNull() {
         assertThrows(NullPointerException.class,
-                () -> createOwner.create(null, email, ownerType),
+                () -> createOwner.create(null, email, ownerType, initialFiatBalance, initialCryptoBalance),
                 "Creating an owner with null name should throw NullPointerException");
     }
 
     @Test
     void create_ShouldThrow_WhenEmailIsNull() {
         assertThrows(NullPointerException.class,
-                () -> createOwner.create(name, null, ownerType),
+                () -> createOwner.create(name, null, ownerType, initialFiatBalance, initialCryptoBalance),
                 "Creating an owner with null email should throw NullPointerException");
     }
 
     @Test
     void create_ShouldThrow_WhenOwnerTypeIsNull() {
         assertThrows(NullPointerException.class,
-                () -> createOwner.create(name, email, null),
+                () -> createOwner.create(name, email, null, initialFiatBalance, initialCryptoBalance),
                 "Creating an owner with null OwnerType should throw NullPointerException");
+    }
+
+    @Test
+    void create_ShouldThrow_WhenInitialFiatBalanceIsNull() {
+        assertThrows(NullPointerException.class,
+                () -> createOwner.create(name, email, ownerType, null, initialCryptoBalance),
+                "Creating an owner with null initialFiatBalance should throw NullPointerException");
+    }
+
+    @Test
+    void create_ShouldThrow_WhenInitialCryptoBalanceIsNull() {
+        assertThrows(NullPointerException.class,
+                () -> createOwner.create(name, email, ownerType, initialFiatBalance, null),
+                "Creating an owner with null initialCryptoBalance should throw NullPointerException");
     }
 }

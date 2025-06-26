@@ -38,13 +38,13 @@ public class DefaultExchangeFiat implements ExchangeFiat {
 
         if (exchangeOperation == INFLOW) {
             owner.getWallet().setFiatBalance(previousFiatBalance.add(amount));
-            transaction.setConcept(FiatTransactionConcept.DEPOSIT);
+            transaction.setConcept(TransactionConcept.DEPOSIT);
         } else {
             if (previousFiatBalance.compareTo(amount) < 0) {
                 throw new BadRequestException("Insufficient fiat balance");
             }
             owner.getWallet().setFiatBalance(previousFiatBalance.subtract(amount));
-            transaction.setConcept(FiatTransactionConcept.WITHDRAWAL);
+            transaction.setConcept(TransactionConcept.WITHDRAWAL);
         }
 
         ownerRepository.save(owner);

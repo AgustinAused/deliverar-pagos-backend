@@ -1,6 +1,6 @@
 {
   "topic": "get.user.fiat.transactions.response",
-  "data":  {
+  "payload":  {
     "traceData" : {
       "originModule" : "module-name", // Módulo que hizo el pedido
       "traceId" : "xxx"  // El id que ellos usan para identificar su propio pedido
@@ -8,14 +8,14 @@
     "email": "juan.perez@example.com",
     "transactions": [
       {
-        "amount": "5000.00",
+        "currentFiatBalance": 150.75,
         "concept": "Depósito bancario",
         "type": "DEPOSIT",
         "status": "SUCCESS",
         "transactionDate": "2024-01-15T10:30:00Z"
       },
       {
-        "amount": "250.00",
+        "amount": 250.00,
         "concept": "Pago de factura",
         "type": "PAYMENT",
         "status": "SUCCESS",
