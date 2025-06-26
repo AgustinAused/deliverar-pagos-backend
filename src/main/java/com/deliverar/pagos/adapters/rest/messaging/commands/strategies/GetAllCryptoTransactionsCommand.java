@@ -148,4 +148,4 @@ public class GetAllCryptoTransactionsCommand extends AsyncBaseCommand {
         }
         return "PAYMENT"; // Default type
     }
-} 
+}

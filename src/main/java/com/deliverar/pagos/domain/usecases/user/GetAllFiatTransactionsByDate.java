@@ -10,4 +10,4 @@ import java.util.Optional;
 @FunctionalInterface
 public interface GetAllFiatTransactionsByDate {
     Page<FiatTransaction> get(Optional<Instant> sinceDate, int pageNumber, int pageSize, Sort.Direction direction);
-} 
+}

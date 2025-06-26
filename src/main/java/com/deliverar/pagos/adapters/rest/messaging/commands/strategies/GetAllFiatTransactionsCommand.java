@@ -151,4 +151,4 @@ public class GetAllFiatTransactionsCommand extends AsyncBaseCommand {
         }
         return "PAYMENT"; // Default type
     }
-} 
+}

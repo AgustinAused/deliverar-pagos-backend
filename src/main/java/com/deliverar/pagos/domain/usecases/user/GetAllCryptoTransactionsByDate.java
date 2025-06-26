@@ -10,4 +10,4 @@ import java.util.Optional;
 @FunctionalInterface
 public interface GetAllCryptoTransactionsByDate {
     Page<Transaction> get(Optional<Instant> sinceDate, int pageNumber, int pageSize, Sort.Direction direction);
-} 
+}

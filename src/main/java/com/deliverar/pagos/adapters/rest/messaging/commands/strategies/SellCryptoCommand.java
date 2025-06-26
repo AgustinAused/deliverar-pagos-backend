@@ -182,4 +182,4 @@ public class SellCryptoCommand extends BaseCommand {
 
         throw new RuntimeException("Timeout waiting for transaction " + transactionId + " to reach final status");
     }
-} 
+}

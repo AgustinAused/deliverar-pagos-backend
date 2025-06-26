@@ -31,4 +31,4 @@ public class DefaultGetAllCryptoTransactionsByDate implements GetAllCryptoTransa
             return transactionRepository.findAllWithOwners(pageReq);
         }
     }
-} 
+}

@@ -31,4 +31,4 @@ public class DefaultGetAllFiatTransactionsByDate implements GetAllFiatTransactio
             return fiatTransactionRepository.findAllWithOwner(pageReq);
         }
     }
-} 
+}

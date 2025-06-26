@@ -105,4 +105,4 @@ public class WalletCreationCommand extends AsyncBaseCommand {
             publishErrorResponse(originalEvent, "Failed to create user: " + e.getMessage());
         }
     }
-} 
+}
