@@ -146,21 +146,21 @@ public class AuthController {
     })
     @PostMapping("/ldap-login")
     public ResponseEntity<?> ldapLogin(@RequestBody Map<String, String> body) {
-        String username = body.get("username");
+        String email = body.get("email");
         String password = body.get("password");
         
-        if (username == null || password == null || username.trim().isEmpty() || password.trim().isEmpty()) {
+        if (email == null || password == null || email.trim().isEmpty() || password.trim().isEmpty()) {
             return ResponseEntity
                     .badRequest()
-                    .body(Map.of("error", "Parámetros 'username' y 'password' son requeridos"));
+                    .body(Map.of("error", "Parámetros 'email' y 'password' son requeridos"));
         }
 
         String domain = "DELIVERAR";
         String fqdnUser;
-        if (username.contains("@")) {
-            fqdnUser = username;
+        if (email.contains("@")) {
+            fqdnUser = email;
         } else {
-            fqdnUser = domain + "\\" + username;
+            fqdnUser = domain + "\\" + email;
         }
         
         String ldapHost = "ad.deliver.ar";
@@ -179,13 +179,13 @@ public class AuthController {
             BindResult bindResult = connection.bind(fqdnUser, password);
 
             if (bindResult.getResultCode() == ResultCode.SUCCESS) {
-                log.info("Usuario '{}' autenticado exitosamente via LDAP", username);
+                log.info("Usuario '{}' autenticado exitosamente via LDAP", email);
                 
                 // Obtener grupos del usuario
-                List<String> userGroups = getUserGroups(connection, username, domain);
-                log.info("Grupos del usuario '{}': {}", username, userGroups);
+                List<String> userGroups = getUserGroups(connection, email, domain);
+                log.info("Grupos del usuario '{}': {}", email, userGroups);
                 
-                String userEmail = username.contains("@") ? username : username + "@deliver.ar";
+                String userEmail = email.contains("@") ? email : email + "@deliver.ar";
                 String accessToken = jwtUtil.generateAccessToken(userEmail, "ldap-user", "USER", userGroups);
                 String refreshToken = jwtUtil.generateRefreshToken(userEmail);
                 
@@ -196,19 +196,19 @@ public class AuthController {
                     "message", "Usuario autenticado exitosamente"
                 ));
             } else {
-                log.warn("Autenticación fallida para usuario '{}': {}", username, bindResult.getDiagnosticMessage());
+                log.warn("Autenticación fallida para usuario '{}': {}", email, bindResult.getDiagnosticMessage());
                 return ResponseEntity
                         .status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("error", "Credenciales inválidas: " + bindResult.getDiagnosticMessage()));
             }
 
         } catch (LDAPException e) {
-            log.error("Error LDAP autenticando usuario '{}': {}", username, e.getDiagnosticMessage());
+            log.error("Error LDAP autenticando usuario '{}': {}", email, e.getDiagnosticMessage());
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error LDAP: " + e.getDiagnosticMessage()));
         } catch (Exception e) {
-            log.error("Error general autenticando usuario '{}': {}", username, e.getMessage());
+            log.error("Error general autenticando usuario '{}': {}", email, e.getMessage());
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error general: " + e.getMessage()));
@@ -219,15 +219,15 @@ public class AuthController {
         }
     }
 
-    private List<String> getUserGroups(LDAPConnection connection, String username, String domain) {
+    private List<String> getUserGroups(LDAPConnection connection, String email, String domain) {
         List<String> groups = new ArrayList<>();
         try {
             // Construir el filtro de búsqueda para encontrar al usuario
             String searchFilter;
-            if (username.contains("@")) {
-                searchFilter = String.format("(userPrincipalName=%s)", username);
+            if (email.contains("@")) {
+                searchFilter = String.format("(userPrincipalName=%s)", email);
             } else {
-                searchFilter = String.format("(sAMAccountName=%s)", username);
+                searchFilter = String.format("(sAMAccountName=%s)", email);
             }
             
             // Buscar el usuario en AD
@@ -258,7 +258,7 @@ public class AuthController {
             }
             
         } catch (LDAPException e) {
-            log.error("Error obteniendo grupos para usuario '{}': {}", username, e.getDiagnosticMessage());
+            log.error("Error obteniendo grupos para usuario '{}': {}", email, e.getDiagnosticMessage());
         }
         
         return groups;
