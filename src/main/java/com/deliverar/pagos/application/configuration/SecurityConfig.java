@@ -1,6 +1,7 @@
 package com.deliverar.pagos.application.configuration;
 
 import com.deliverar.pagos.adapters.rest.security.JwtAuthenticationFilter;
+import com.deliverar.pagos.adapters.rest.security.LdapJwtAuthenticationFilter;
 import com.deliverar.pagos.infrastructure.security.JpaUserDetailsService;
 import com.deliverar.pagos.infrastructure.security.JwtUtil;
 import org.springframework.context.annotation.Bean;
@@ -73,9 +74,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 // 3) Sesión stateless
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // 4) JWT filter
-                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, uds),
+                // 4) JWT filters (LDAP first, then regular)
+                .addFilterBefore(new LdapJwtAuthenticationFilter(jwtUtil),
                         UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, uds),
+                        LdapJwtAuthenticationFilter.class)
                 // 5) Reglas de acceso
                 .authorizeHttpRequests(auth -> auth
                         // permitir preflight

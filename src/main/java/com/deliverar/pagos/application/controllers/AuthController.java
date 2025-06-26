@@ -5,6 +5,15 @@ import com.deliverar.pagos.domain.dtos.AuthResponse;
 import com.deliverar.pagos.domain.entities.User;
 import com.deliverar.pagos.domain.repositories.UserRepository;
 import com.deliverar.pagos.infrastructure.security.JwtUtil;
+import com.deliverar.pagos.infrastructure.security.ActiveDirectoryService;
+import com.unboundid.ldap.sdk.*;
+import com.unboundid.ldap.sdk.extensions.StartTLSExtendedRequest;
+import com.unboundid.util.ssl.SSLUtil;
+import com.unboundid.util.ssl.TrustAllTrustManager;
+
+import javax.net.ssl.SSLSocketFactory;
+import java.util.List;
+import java.util.ArrayList;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,17 +45,20 @@ public class AuthController {
     private final AuthenticationManager authManager;
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final ActiveDirectoryService activeDirectoryService;
     private final long expiresIn;
 
     public AuthController(
             AuthenticationManager authManager,
             JwtUtil jwtUtil,
             UserRepository userRepository,
+            ActiveDirectoryService activeDirectoryService,
             @Value("${jwt.expiration}") long jwtExpirationMs
     ) {
         this.authManager = authManager;
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
+        this.activeDirectoryService = activeDirectoryService;
         this.expiresIn = jwtExpirationMs / 1000;
     }
 
@@ -120,5 +132,147 @@ public class AuthController {
                 "accessToken", newAccessToken,
                 "expiresIn", expiresIn
         ));
+    }
+
+    @Operation(summary = "Iniciar sesión con Active Directory (Simple)",
+            description = "Autentica un usuario directamente contra Active Directory sin validación local")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Autenticación exitosa",
+                content = @Content),
+        @ApiResponse(responseCode = "401", description = "Credenciales inválidas",
+                content = @Content),
+        @ApiResponse(responseCode = "400", description = "Parámetros requeridos faltantes",
+                content = @Content)
+    })
+    @PostMapping("/ldap-login")
+    public ResponseEntity<?> ldapLogin(@RequestBody Map<String, String> body) {
+        String username = body.get("username");
+        String password = body.get("password");
+        
+        if (username == null || password == null || username.trim().isEmpty() || password.trim().isEmpty()) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of("error", "Parámetros 'username' y 'password' son requeridos"));
+        }
+
+        String domain = "DELIVERAR";
+        String fqdnUser;
+        if (username.contains("@")) {
+            fqdnUser = username;
+        } else {
+            fqdnUser = domain + "\\" + username;
+        }
+        
+        String ldapHost = "ad.deliver.ar";
+        int ldapPort = 389;
+
+        LDAPConnection connection = null;
+        try {
+            SSLUtil sslUtil = new SSLUtil(new TrustAllTrustManager());
+            SSLSocketFactory sslSocketFactory = sslUtil.createSSLSocketFactory();
+
+            connection = new LDAPConnection(ldapHost, ldapPort);
+            connection.processExtendedOperation(
+                    new StartTLSExtendedRequest(sslSocketFactory)
+            );
+
+            BindResult bindResult = connection.bind(fqdnUser, password);
+
+            if (bindResult.getResultCode() == ResultCode.SUCCESS) {
+                log.info("Usuario '{}' autenticado exitosamente via LDAP", username);
+                
+                // Obtener grupos del usuario
+                List<String> userGroups = getUserGroups(connection, username, domain);
+                log.info("Grupos del usuario '{}': {}", username, userGroups);
+                
+                String userEmail = username.contains("@") ? username : username + "@deliver.ar";
+                String accessToken = jwtUtil.generateAccessToken(userEmail, "ldap-user", "USER", userGroups);
+                String refreshToken = jwtUtil.generateRefreshToken(userEmail);
+                
+                return ResponseEntity.ok(Map.of(
+                    "accessToken", accessToken,
+                    "refreshToken", refreshToken,
+                    "expiresIn", expiresIn,
+                    "message", "Usuario autenticado exitosamente"
+                ));
+            } else {
+                log.warn("Autenticación fallida para usuario '{}': {}", username, bindResult.getDiagnosticMessage());
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Credenciales inválidas: " + bindResult.getDiagnosticMessage()));
+            }
+
+        } catch (LDAPException e) {
+            log.error("Error LDAP autenticando usuario '{}': {}", username, e.getDiagnosticMessage());
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error LDAP: " + e.getDiagnosticMessage()));
+        } catch (Exception e) {
+            log.error("Error general autenticando usuario '{}': {}", username, e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error general: " + e.getMessage()));
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    private List<String> getUserGroups(LDAPConnection connection, String username, String domain) {
+        List<String> groups = new ArrayList<>();
+        try {
+            // Construir el filtro de búsqueda para encontrar al usuario
+            String searchFilter;
+            if (username.contains("@")) {
+                searchFilter = String.format("(userPrincipalName=%s)", username);
+            } else {
+                searchFilter = String.format("(sAMAccountName=%s)", username);
+            }
+            
+            // Buscar el usuario en AD
+            String baseDN = String.format("DC=%s,DC=ar", domain.toLowerCase().replace("deliverar", "deliver"));
+            SearchRequest searchRequest = new SearchRequest(
+                baseDN,
+                SearchScope.SUB,
+                searchFilter,
+                "memberOf", "cn"
+            );
+            
+            SearchResult searchResult = connection.search(searchRequest);
+            
+            if (searchResult.getEntryCount() > 0) {
+                SearchResultEntry userEntry = searchResult.getSearchEntries().get(0);
+                
+                // Obtener los grupos (memberOf)
+                Attribute memberOfAttribute = userEntry.getAttribute("memberOf");
+                if (memberOfAttribute != null) {
+                    for (String groupDN : memberOfAttribute.getValues()) {
+                        // Extraer el nombre del grupo del DN
+                        String groupName = extractGroupName(groupDN);
+                        if (groupName != null) {
+                            groups.add(groupName);
+                        }
+                    }
+                }
+            }
+            
+        } catch (LDAPException e) {
+            log.error("Error obteniendo grupos para usuario '{}': {}", username, e.getDiagnosticMessage());
+        }
+        
+        return groups;
+    }
+    
+    private String extractGroupName(String groupDN) {
+        // Extraer el nombre del grupo de un DN como "CN=Grupo,OU=Groups,DC=deliver,DC=ar"
+        if (groupDN != null && groupDN.toLowerCase().startsWith("cn=")) {
+            int startIndex = 3; // Después de "CN="
+            int endIndex = groupDN.indexOf(',');
+            if (endIndex > startIndex) {
+                return groupDN.substring(startIndex, endIndex);
+            }
+        }
+        return null;
     }
 }
