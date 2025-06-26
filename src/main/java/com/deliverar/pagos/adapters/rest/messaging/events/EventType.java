@@ -9,7 +9,7 @@ import lombok.Getter;
 public enum EventType {
     // Eventos de Entrada
     TENANT_CREATION_REQUEST("tenant.created"),
-    DELIVERY_USER_CREATED_REQUEST("delivery.user.created"),
+    DELIVERY_USER_CREATED_REQUEST("delivery.nuevoRepartidor"),
     WALLET_CREATION_REQUEST("wallet.creation.request"),
 
     WALLET_DELETION_REQUEST("wallet.deletion.request"),

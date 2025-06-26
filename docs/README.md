@@ -4,7 +4,7 @@
 
 ````bash
 curl --location 'http://localhost:8080/callback' \
---header 'x-topic: delivery.user.created' \
+--header 'x-topic: delivery.nuevoRepartidor' \
 --header 'Content-Type: application/json' \
 --data '{
     "name": "Fernanda Salinas",
