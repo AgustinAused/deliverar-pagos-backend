@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class OwnerMapper {
@@ -20,11 +19,13 @@ public class OwnerMapper {
                 .name(entity.getName())
                 .email(entity.getEmail())
                 .ownerType(entity.getOwnerType())
+                .cryptoBalance(entity.getWallet().getCryptoBalance())
+                .fiatBalance(entity.getWallet().getFiatBalance())
                 .build();
     }
 
     public List<OwnerDto> toOwnerDtos(List<Owner> entities) {
-        return entities.stream().map(this::toOwnerDto).collect(Collectors.toList());
+        return entities.stream().map(this::toOwnerDto).toList();
     }
 
     public TransactionDto toTransactionDto(Transaction entity) {
@@ -44,7 +45,7 @@ public class OwnerMapper {
     }
 
     public List<TransactionDto> toTransactionDtos(List<Transaction> transactions) {
-        return transactions.stream().map(this::toTransactionDto).collect(Collectors.toList());
+        return transactions.stream().map(this::toTransactionDto).toList();
     }
 
     public FiatTransactionDto toFiatTransactionDto(FiatTransaction entity) {
@@ -61,6 +62,6 @@ public class OwnerMapper {
     }
 
     public List<FiatTransactionDto> toFiatTransactionDtos(List<FiatTransaction> transactions) {
-        return transactions.stream().map(this::toFiatTransactionDto).collect(Collectors.toList());
+        return transactions.stream().map(this::toFiatTransactionDto).toList();
     }
 }
