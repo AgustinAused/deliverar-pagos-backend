@@ -45,6 +45,9 @@ jobs:
           HUB_URL: ${{ secrets.HUB_URL }}
           HUB_USER: ${{ secrets.HUB_USER }}
           HUB_PASSWORD: ${{ secrets.HUB_PASSWORD }}
+          AD_DOMAIN: ${{ secrets.AD_DOMAIN }}
+          AD_HOST: ${{ secrets.AD_HOST }}
+          AD_PORT: ${{ secrets.AD_PORT }}
         run: |
           chmod +x ./gradlew
           ./gradlew clean build
@@ -90,8 +93,11 @@ jobs:
           OWNER_MAIL=${{ secrets.OWNER_MAIL }}
           OWNER_NAME=${{ secrets.OWNER_NAME }}
           HUB_URL=${{ secrets.HUB_URL }}
-          HUB_USER="${{ secrets.HUB_USER }}"
-          HUB_PASSWORD="${{ secrets.HUB_PASSWORD }}"
+          HUB_USER=${{ secrets.HUB_USER }}
+          HUB_PASSWORD=${{ secrets.HUB_PASSWORD }}
+          AD_DOMAIN=${{ secrets.AD_DOMAIN }}
+          AD_HOST=${{ secrets.AD_HOST }}
+          AD_PORT=${{ secrets.AD_PORT }}
           EOF
           ls -la .env
           
