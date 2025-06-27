@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -21,29 +22,30 @@ public class DefaultExchangeFiat implements ExchangeFiat {
     private final FiatTransactionRepository fiatTransactionRepository;
 
     @Override
-    public BigDecimal exchange(Owner owner, BigDecimal amount, ExchangeOperation exchangeOperation) {
+    public BigDecimal exchange(Owner owner, BigDecimal originalAmount, ExchangeOperation exchangeOperation) {
         Objects.requireNonNull(owner, "Owner cannot be null");
-        Objects.requireNonNull(amount, "Amount cannot be null");
+        Objects.requireNonNull(originalAmount, "Amount cannot be null");
         Objects.requireNonNull(exchangeOperation, "ExchangeOperation cannot be null");
 
         BigDecimal previousFiatBalance = owner.getWallet().getFiatBalance();
 
+        BigDecimal formattedAmound = originalAmount.setScale(2, RoundingMode.HALF_UP);
         FiatTransaction transaction = FiatTransaction.builder()
                 .owner(owner)
-                .amount(amount)
+                .amount(formattedAmound)
                 .currency(CurrencyType.FIAT)
                 .transactionDate(Instant.now())
                 .status(TransactionStatus.SUCCESS)
                 .build();
 
         if (exchangeOperation == INFLOW) {
-            owner.getWallet().setFiatBalance(previousFiatBalance.add(amount));
+            owner.getWallet().setFiatBalance(previousFiatBalance.add(formattedAmound));
             transaction.setConcept(TransactionConcept.DEPOSIT);
         } else {
-            if (previousFiatBalance.compareTo(amount) < 0) {
+            if (previousFiatBalance.compareTo(formattedAmound) < 0) {
                 throw new BadRequestException("Insufficient fiat balance");
             }
-            owner.getWallet().setFiatBalance(previousFiatBalance.subtract(amount));
+            owner.getWallet().setFiatBalance(previousFiatBalance.subtract(formattedAmound));
             transaction.setConcept(TransactionConcept.WITHDRAWAL);
         }
 

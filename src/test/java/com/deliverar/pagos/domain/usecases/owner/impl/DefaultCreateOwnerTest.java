@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -32,8 +33,8 @@ class DefaultCreateOwnerTest {
     private final String name = "Jane Doe";
     private final String email = "jane.doe@example.com";
     private final OwnerType ownerType = OwnerType.CLIENT;
-    private final BigDecimal initialFiatBalance = BigDecimal.valueOf(1000);
-    private final BigDecimal initialCryptoBalance = BigDecimal.valueOf(100);
+    private final BigDecimal initialFiatBalance = BigDecimal.valueOf(1000.00).setScale(2, RoundingMode.HALF_EVEN);
+    private final BigDecimal initialCryptoBalance = BigDecimal.valueOf(100.00).setScale(2, RoundingMode.HALF_EVEN);
 
     @BeforeEach
     void setUp() {
