@@ -182,13 +182,15 @@ public class AuthController {
                 log.info("Grupos del usuario '{}': {}", email, userGroups);
                 
                 String userEmail = email.contains("@") ? email : email + "@deliver.ar";
-                String accessToken = jwtUtil.generateAccessToken(userEmail, "ldap-user", "USER", userGroups);
+                String highestRole = getHighestRole(userGroups);
+                String accessToken = jwtUtil.generateAccessToken(userEmail, "ldap-user", highestRole, userGroups);
                 String refreshToken = jwtUtil.generateRefreshToken(userEmail);
                 
                 return ResponseEntity.ok(Map.of(
                     "accessToken", accessToken,
                     "refreshToken", refreshToken,
                     "expiresIn", expiresIn,
+                    "role", highestRole,
                     "message", "Usuario autenticado exitosamente"
                 ));
             } else {
@@ -270,5 +272,19 @@ public class AuthController {
             }
         }
         return null;
+    }
+    
+    private String getHighestRole(List<String> userGroups) {
+        // Jerarquía de roles: ADMIN > AUDITOR > CORE > USER (por defecto)
+        if (userGroups.contains("blockchain-admin")) {
+            return "ADMIN";
+        }
+        if (userGroups.contains("blockchain-auditor")) {
+            return "AUDITOR";
+        }
+        if (userGroups.contains("blockchain-core")) {
+            return "CORE";
+        }
+        return "USER"; // Rol por defecto
     }
 }
