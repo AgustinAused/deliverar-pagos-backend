@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class OwnerMapperTest {
     private OwnerMapper mapper;
     private Owner owner;
+    private Wallet wallet;
     private Transaction tx;
     private FiatTransaction fiatTx;
 
@@ -24,11 +25,19 @@ class OwnerMapperTest {
     void setUp() {
         mapper = new OwnerMapper();
         UUID id = UUID.randomUUID();
+        wallet = Wallet.builder()
+                .id(id)
+                .cryptoBalance(BigDecimal.TEN)
+                .fiatBalance(BigDecimal.TWO)
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
         owner = Owner.builder()
                 .id(id)
                 .name("Test User")
                 .email("test@example.com")
                 .ownerType(OwnerType.NATURAL)
+                .wallet(wallet)
                 .build();
         tx = Transaction.builder()
                 .id(UUID.randomUUID())
@@ -48,7 +57,7 @@ class OwnerMapperTest {
                 .owner(owner)
                 .amount(new BigDecimal("67.89"))
                 .currency(CurrencyType.FIAT)
-                .concept(FiatTransactionConcept.DEPOSIT)
+                .concept(TransactionConcept.DEPOSIT)
                 .transactionDate(Instant.now())
                 .createdAt(Instant.now())
                 .status(TransactionStatus.SUCCESS)
@@ -62,6 +71,8 @@ class OwnerMapperTest {
         assertEquals(owner.getName(), dto.getName());
         assertEquals(owner.getEmail(), dto.getEmail());
         assertEquals(owner.getOwnerType(), dto.getOwnerType());
+        assertEquals(owner.getWallet().getCryptoBalance(), dto.getCryptoBalance());
+        assertEquals(owner.getWallet().getFiatBalance(), dto.getFiatBalance());
     }
 
     @Test

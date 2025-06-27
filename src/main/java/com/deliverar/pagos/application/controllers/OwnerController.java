@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 import static org.springframework.data.domain.Sort.by;
@@ -80,7 +81,13 @@ public class OwnerController {
     @ResponseStatus(HttpStatus.CREATED)
     public CreateOwnerResponse create(@RequestBody CreateOwnerRequest request) {
         log.info("Create owner request: {}", request);
-        Owner owner = createOwner.create(request.getName(), request.getEmail().toLowerCase(), request.getOwnerType());
+        Owner owner = createOwner.create(
+            request.getName(), 
+            request.getEmail().toLowerCase(), 
+            request.getOwnerType(),
+            BigDecimal.ZERO, // Default initial fiat balance
+            BigDecimal.ZERO  // Default initial crypto balance
+        );
         return CreateOwnerResponse.builder().id(owner.getId()).build();
     }
 

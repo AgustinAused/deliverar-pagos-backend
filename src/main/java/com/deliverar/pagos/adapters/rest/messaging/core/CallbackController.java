@@ -1,5 +1,6 @@
 package com.deliverar.pagos.adapters.rest.messaging.core;
 
+import com.deliverar.pagos.adapters.rest.messaging.core.dtos.Event;
 import com.deliverar.pagos.adapters.rest.messaging.core.dtos.ImmutableEvent;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -11,6 +12,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/callback")
@@ -36,21 +39,26 @@ public class CallbackController {
         return ResponseEntity.ok(challenge);
     }
 
-    @Operation(summary = "Recibir evento", description = "Endpoint para recibir eventos del hub")
+    @Operation(summary = "Recibir evento", description = "Endpoint para recibir eventos del hub de forma asíncrona")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Evento procesado exitosamente"),
-            @ApiResponse(responseCode = "200", description = "Evento procesado con errores")
+            @ApiResponse(responseCode = "204", description = "Evento recibido correctamente, procesamiento asíncrono iniciado"),
+            @ApiResponse(responseCode = "200", description = "Evento recibido con errores, no se reintentará")
     })
     @PostMapping
     public ResponseEntity<Void> receiveEvent(
-            @Parameter(description = "Payload del evento") @RequestBody ImmutableEvent event) {
+            @Parameter(description = "Payload del evento") @RequestBody Map<String, Object> payload,
+            @RequestHeader("x-topic") String topic) {
         try {
-            log.info("Evento recibido: {}", event);
+            log.info("Evento recibido del hub: topic {} - payload {}", topic, payload);
 
-            // Internal event publication
-            applicationEventPublisher.publishEvent(
-                    new ImmutableEvent(event.topic(), event.data())
-            );
+            // Publicar evento interno para procesamiento asíncrono
+            Event internalEvent = Event.builder()
+                    .topic(topic)
+                    .payload(payload)
+                    .build();
+
+            applicationEventPublisher.publishEvent(internalEvent);
+
             return ResponseEntity.noContent().build();
         } catch (Exception ex) {
             log.error("Error procesando evento del hub, devolviendo 200 OK para evitar retry", ex);

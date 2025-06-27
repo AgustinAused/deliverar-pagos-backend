@@ -1,7 +1,6 @@
 package com.deliverar.pagos.domain.usecases.owner;
 
 import com.deliverar.pagos.domain.entities.Owner;
-import com.deliverar.pagos.domain.entities.OwnerType;
 
 import java.util.UUID;
 

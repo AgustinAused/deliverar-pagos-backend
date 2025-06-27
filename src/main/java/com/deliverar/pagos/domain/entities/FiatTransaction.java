@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -36,7 +35,7 @@ public class FiatTransaction {
 
     @Column(length = 20, nullable = false)
     @Enumerated(EnumType.STRING)
-    private FiatTransactionConcept concept;
+    private TransactionConcept concept;
 
     @Column(name = "transaction_date", nullable = false)
     private Instant transactionDate;

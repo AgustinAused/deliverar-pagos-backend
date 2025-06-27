@@ -1,6 +1,6 @@
 {
   "topic": "sell.crypto.response",
-  "data": {
+  "payload": {
     "traceData" : {
       "originModule" : "module-name", // Módulo que hizo el pedido
       "traceId" : "xxx"  // El id que ellos usan para identificar su propio pedido
@@ -10,7 +10,7 @@
     "status": "PENDING",
     "blockchainTxHash": "0x9876543210fedcba...",
     "transactionDate": "2024-01-15T10:30:00Z",
-    "currentFiatBalance": "5000.00", // En cuanto quedó el saldo de pesos
-    "currentCryptoBalance": "150.75" // En cuanto quedó el saldo de cryptos
+    "currentFiatBalance": 5000.00, // En cuanto quedó el saldo de pesos
+    "currentFiatBalance": 150.75 // En cuanto quedó el saldo de cryptos
   }
 }
