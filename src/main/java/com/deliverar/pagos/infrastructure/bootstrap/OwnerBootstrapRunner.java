@@ -35,7 +35,7 @@ public class OwnerBootstrapRunner implements CommandLineRunner {
             } catch (Exception e) {
                 log.error("Error getting the crypto balance of owner. Error message: {}", e.getMessage());
             }
-            Owner owner = Owner.builder().name(ownerName).email(ownerEmail).ownerType(OwnerType.ADMIN).build();
+            Owner owner = Owner.builder().name(ownerName).email(ownerEmail).ownerType(OwnerType.DC_COMPANY).build();
             Owner entity = ownerUseCase.create(owner, BigDecimal.valueOf(1000000000), cryptoBalance);
             log.info("Owner created: {}", entity);
         }

@@ -5,5 +5,5 @@ public enum OwnerType {
     DELIVERY,
     TENANT,
     EMPLOYEE,
-    ADMIN;
+    DC_COMPANY;
 }
