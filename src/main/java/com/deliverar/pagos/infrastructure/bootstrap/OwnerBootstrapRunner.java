@@ -1,11 +1,10 @@
 package com.deliverar.pagos.infrastructure.bootstrap;
 
 import com.deliverar.pagos.adapters.crypto.service.DeliverCoinService;
-import com.deliverar.pagos.domain.entities.*;
+import com.deliverar.pagos.domain.entities.Owner;
+import com.deliverar.pagos.domain.entities.OwnerType;
 import com.deliverar.pagos.domain.repositories.OwnerRepository;
 import com.deliverar.pagos.domain.usecases.owner.CreateOwner;
-import com.deliverar.pagos.domain.usecases.owner.impl.DefaultCreateOwner;
-import com.deliverar.pagos.domain.usecases.owner.impl.DefaultExchangeFiat;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,8 +35,9 @@ public class OwnerBootstrapRunner implements CommandLineRunner {
             } catch (Exception e) {
                 log.error("Error getting the crypto balance of owner. Error message: {}", e.getMessage());
             }
-            Owner owner = ownerUseCase.create(ownerName, ownerEmail, OwnerType.LEGAL, BigDecimal.valueOf(1000000000), cryptoBalance);
-            log.info("Owner created: {}", owner);
+            Owner owner = Owner.builder().name(ownerName).email(ownerEmail).ownerType(OwnerType.DC_COMPANY).build();
+            Owner entity = ownerUseCase.create(owner, BigDecimal.valueOf(1000000000), cryptoBalance);
+            log.info("Owner created: {}", entity);
         }
     }
 }

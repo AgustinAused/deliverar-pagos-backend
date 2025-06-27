@@ -36,7 +36,7 @@ class OwnerMapperTest {
                 .id(id)
                 .name("Test User")
                 .email("test@example.com")
-                .ownerType(OwnerType.NATURAL)
+                .ownerType(OwnerType.CLIENT)
                 .wallet(wallet)
                 .build();
         tx = Transaction.builder()

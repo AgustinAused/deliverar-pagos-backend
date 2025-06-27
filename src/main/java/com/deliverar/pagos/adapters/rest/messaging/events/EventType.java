@@ -8,7 +8,7 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public enum EventType {
     // Eventos de Entrada
-    TENANT_CREATION_REQUEST("tenant.created"),
+    TENANT_CREATION_REQUEST("tenant.creado"),
     DELIVERY_USER_CREATED_REQUEST("delivery.nuevoRepartidor"),
     WALLET_CREATION_REQUEST("wallet.creation.request"),
 
@@ -39,7 +39,7 @@ public enum EventType {
     SELL_CRYPTO_RESPONSE("sell.crypto.response"),
     GET_ALL_FIAT_TRANSACTIONS_RESPONSE("get.all.fiat.transactions.response"),
     GET_ALL_CRYPTO_TRANSACTIONS_RESPONSE("get.all.crypto.transactions.response"),
-    ERROR_RESPONSE("error.response");
+    ERROR_RESPONSE("blockchain.error.response");
 
     private final String topic;
 

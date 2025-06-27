@@ -1,7 +1,6 @@
 package com.deliverar.pagos.domain.usecases.owner.impl;
 
 import com.deliverar.pagos.domain.entities.Owner;
-import com.deliverar.pagos.domain.entities.OwnerType;
 import com.deliverar.pagos.domain.entities.Wallet;
 import com.deliverar.pagos.domain.repositories.OwnerRepository;
 import com.deliverar.pagos.domain.usecases.owner.CreateOwner;
@@ -20,10 +19,10 @@ public class DefaultCreateOwner implements CreateOwner {
 
     @Override
     @Transactional
-    public Owner create(String name, String email, OwnerType ownerType, BigDecimal initialFiatBalance, BigDecimal initialCryptoBalance) {
-        Objects.requireNonNull(name, "Name cannot be null");
-        Objects.requireNonNull(email, "Email cannot be null");
-        Objects.requireNonNull(ownerType, "OwnerType cannot be null");
+    public Owner create(Owner owner, BigDecimal initialFiatBalance, BigDecimal initialCryptoBalance) {
+        Objects.requireNonNull(owner.getName(), "Name cannot be null");
+        Objects.requireNonNull(owner.getEmail(), "Email cannot be null");
+        Objects.requireNonNull(owner.getOwnerType(), "OwnerType cannot be null");
         Objects.requireNonNull(initialFiatBalance, "InitialFiatBalance cannot be null");
         Objects.requireNonNull(initialCryptoBalance, "InitialCryptoBalance cannot be null");
 
@@ -34,12 +33,7 @@ public class DefaultCreateOwner implements CreateOwner {
                 .updatedAt(Instant.now())
                 .build();
 
-        Owner owner = Owner.builder()
-                .name(name)
-                .email(email)
-                .ownerType(ownerType)
-                .wallet(wallet)
-                .build();
+        owner.setWallet(wallet);
 
         return ownerRepository.save(owner);
     }
