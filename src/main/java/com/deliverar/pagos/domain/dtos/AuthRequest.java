@@ -13,3 +13,12 @@ public class AuthRequest {
     private String email;
     private String password;
 }
+
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+class AdAuthRequest {
+    private String username;
+    private String password;
+}

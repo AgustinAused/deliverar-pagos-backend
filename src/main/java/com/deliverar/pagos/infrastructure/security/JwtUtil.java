@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
 import java.util.function.Function;
 
 @Component
@@ -31,6 +32,18 @@ public class JwtUtil {
                 .setSubject(username)
                 .claim("userId", userId)
                 .claim("role", role)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String generateAccessToken(String username, String userId, String role, List<String> groups) {
+        return Jwts.builder()
+                .setSubject(username)
+                .claim("userId", userId)
+                .claim("role", role)
+                .claim("groups", groups)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -60,6 +73,11 @@ public class JwtUtil {
 
     public String extractRole(String token) {
         return extractAllClaims(token).get("role", String.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> extractGroups(String token) {
+        return extractAllClaims(token).get("groups", List.class);
     }
 
     public Date extractExpiration(String token) {
