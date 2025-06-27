@@ -1,6 +1,9 @@
 package com.deliverar.pagos.domain.entities;
 
 public enum OwnerType {
-    NATURAL,
-    LEGAL;
+    CLIENT,
+    DELIVERY,
+    TENANT,
+    EMPLOYEE,
+    ADMIN;
 }

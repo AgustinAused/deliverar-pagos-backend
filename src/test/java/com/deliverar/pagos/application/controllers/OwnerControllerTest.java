@@ -60,10 +60,10 @@ class OwnerControllerTest {
 
     @Test
     void createOwner_ReturnsCreated() throws Exception {
-        CreateOwnerRequest req = new CreateOwnerRequest("John", "john@example.com", OwnerType.NATURAL);
-        when(createOwner.create(anyString(), anyString(), any(), any(), any())).thenReturn(Owner.builder().id(ownerId).build());
+        CreateOwnerRequest req = new CreateOwnerRequest("John", "john@example.com", OwnerType.CLIENT);
+        when(createOwner.create(any(), any(), any())).thenReturn(Owner.builder().id(ownerId).build());
 
-        mockMvc.perform(post("/api/owners").contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"John\",\"email\":\"john@example.com\",\"ownerType\":\"NATURAL\"}")).andExpect(status().isCreated()).andExpect(jsonPath("$.id").value(ownerId.toString()));
+        mockMvc.perform(post("/api/owners").contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"John\",\"email\":\"john@example.com\",\"ownerType\":\"CLIENT\"}")).andExpect(status().isCreated()).andExpect(jsonPath("$.id").value(ownerId.toString()));
     }
 
     @Test

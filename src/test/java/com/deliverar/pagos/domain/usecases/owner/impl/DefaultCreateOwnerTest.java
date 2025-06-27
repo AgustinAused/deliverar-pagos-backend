@@ -31,7 +31,7 @@ class DefaultCreateOwnerTest {
 
     private final String name = "Jane Doe";
     private final String email = "jane.doe@example.com";
-    private final OwnerType ownerType = OwnerType.NATURAL;
+    private final OwnerType ownerType = OwnerType.CLIENT;
     private final BigDecimal initialFiatBalance = BigDecimal.valueOf(1000);
     private final BigDecimal initialCryptoBalance = BigDecimal.valueOf(100);
 
@@ -58,7 +58,13 @@ class DefaultCreateOwnerTest {
                 .build();
         when(ownerRepository.save(any(Owner.class))).thenReturn(stubOwner);
 
-        Owner result = createOwner.create(name, email, ownerType, initialFiatBalance, initialCryptoBalance);
+        Owner owner = Owner.builder()
+                .name(name)
+                .email(email)
+                .ownerType(ownerType)
+                .build();
+
+        Owner result = createOwner.create(owner, initialFiatBalance, initialCryptoBalance);
 
         assertEquals(stubOwner, result, "Expected the saved owner to be returned");
         ArgumentCaptor<Owner> captor = ArgumentCaptor.forClass(Owner.class);
@@ -77,36 +83,57 @@ class DefaultCreateOwnerTest {
 
     @Test
     void create_ShouldThrow_WhenNameIsNull() {
+        Owner owner = Owner.builder()
+                .email(email)
+                .build();
         assertThrows(NullPointerException.class,
-                () -> createOwner.create(null, email, ownerType, initialFiatBalance, initialCryptoBalance),
+                () -> createOwner.create(owner, initialFiatBalance, initialCryptoBalance),
                 "Creating an owner with null name should throw NullPointerException");
     }
 
     @Test
     void create_ShouldThrow_WhenEmailIsNull() {
+        Owner owner = Owner.builder()
+                .name(name)
+                .ownerType(ownerType)
+                .build();
+
         assertThrows(NullPointerException.class,
-                () -> createOwner.create(name, null, ownerType, initialFiatBalance, initialCryptoBalance),
+                () -> createOwner.create(owner, initialFiatBalance, initialCryptoBalance),
                 "Creating an owner with null email should throw NullPointerException");
     }
 
     @Test
     void create_ShouldThrow_WhenOwnerTypeIsNull() {
+        Owner owner = Owner.builder()
+                .name(name)
+                .email(email)
+                .build();
+
         assertThrows(NullPointerException.class,
-                () -> createOwner.create(name, email, null, initialFiatBalance, initialCryptoBalance),
+                () -> createOwner.create(owner, initialFiatBalance, initialCryptoBalance),
                 "Creating an owner with null OwnerType should throw NullPointerException");
     }
 
     @Test
     void create_ShouldThrow_WhenInitialFiatBalanceIsNull() {
+        Owner owner = Owner.builder()
+                .name(name)
+                .email(email)
+                .build();
         assertThrows(NullPointerException.class,
-                () -> createOwner.create(name, email, ownerType, null, initialCryptoBalance),
+                () -> createOwner.create(owner, null, initialCryptoBalance),
                 "Creating an owner with null initialFiatBalance should throw NullPointerException");
     }
 
     @Test
     void create_ShouldThrow_WhenInitialCryptoBalanceIsNull() {
+        Owner owner = Owner.builder()
+                .name(name)
+                .email(email)
+                .build();
         assertThrows(NullPointerException.class,
-                () -> createOwner.create(name, email, ownerType, initialFiatBalance, null),
+                () -> createOwner.create(owner, initialFiatBalance, null),
                 "Creating an owner with null initialCryptoBalance should throw NullPointerException");
     }
 }

@@ -1,6 +1,9 @@
 package com.deliverar.pagos.domain.usecases.owner.impl;
 
-import com.deliverar.pagos.domain.entities.*;
+import com.deliverar.pagos.domain.entities.ExchangeOperation;
+import com.deliverar.pagos.domain.entities.Owner;
+import com.deliverar.pagos.domain.entities.OwnerType;
+import com.deliverar.pagos.domain.entities.Wallet;
 import com.deliverar.pagos.domain.exceptions.BadRequestException;
 import com.deliverar.pagos.domain.repositories.FiatTransactionRepository;
 import com.deliverar.pagos.domain.repositories.OwnerRepository;
@@ -16,7 +19,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,7 +36,6 @@ class DefaultExchangeFiatTest {
     private DefaultExchangeFiat exchangeFiat;
 
     private Owner owner;
-    private FiatTransaction fiatTransaction;
 
     @BeforeEach
     void setUp() {
@@ -46,7 +49,7 @@ class DefaultExchangeFiatTest {
                 .id(UUID.randomUUID())
                 .name("Test Owner")
                 .email("test@example.com")
-                .ownerType(OwnerType.NATURAL)
+                .ownerType(OwnerType.DELIVERY)
                 .wallet(wallet)
                 .build();
     }

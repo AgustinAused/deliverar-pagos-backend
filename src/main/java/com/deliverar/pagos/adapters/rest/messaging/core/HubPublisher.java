@@ -61,6 +61,7 @@ public class HubPublisher {
                 .onStatus(HttpStatusCode::is5xxServerError,
                         response -> Mono.error(new InternalServerException("Server error: " + response.statusCode().value())))
                 .toBodilessEntity()
+                .doOnNext(response -> log.info("Core hub response status code {}", response.getStatusCode()))
                 .then();
     }
 }
