@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -27,8 +28,8 @@ public class DefaultCreateOwner implements CreateOwner {
         Objects.requireNonNull(initialCryptoBalance, "InitialCryptoBalance cannot be null");
 
         Wallet wallet = Wallet.builder()
-                .fiatBalance(initialFiatBalance)
-                .cryptoBalance(initialCryptoBalance)
+                .fiatBalance(initialFiatBalance.setScale(2, RoundingMode.HALF_UP))
+                .cryptoBalance(initialCryptoBalance.setScale(2, RoundingMode.HALF_UP))
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .build();

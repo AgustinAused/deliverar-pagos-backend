@@ -22,6 +22,7 @@ import jakarta.persistence.PersistenceContext;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -334,7 +335,7 @@ public class DeliverCoinService {
     public void syncBalance(String email) throws Exception {
         Owner owner = getOwnerByEmail(email);
         BigDecimal blockchainBalance = balanceOf(email);
-        BigDecimal databaseBalance = owner.getWallet().getCryptoBalance();
+        BigDecimal databaseBalance = owner.getWallet().getCryptoBalance().setScale(2, RoundingMode.HALF_UP);
 
         if (!blockchainBalance.equals(databaseBalance)) {
             owner.getWallet().setCryptoBalance(blockchainBalance);

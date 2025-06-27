@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -21,10 +22,10 @@ public class DefaultPayWithFiat implements PayWithFiat {
 
     @Override
     @Transactional
-    public void pay(Owner fromOwner, Owner toOwner, BigDecimal amount) {
+    public void pay(Owner fromOwner, Owner toOwner, BigDecimal originalAmount) {
         Objects.requireNonNull(fromOwner, "FromOwner cannot be null");
         Objects.requireNonNull(toOwner, "ToOwner cannot be null");
-        Objects.requireNonNull(amount, "Amount cannot be null");
+        Objects.requireNonNull(originalAmount, "Amount cannot be null");
 
         // Validate different owners
         if (fromOwner.getId().equals(toOwner.getId())) {
@@ -32,23 +33,24 @@ public class DefaultPayWithFiat implements PayWithFiat {
         }
 
         // Validate positive amount
-        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+        if (originalAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BadRequestException("Transfer amount must be positive");
         }
 
         // Validate sufficient balance
-        if (fromOwner.getWallet().getFiatBalance().compareTo(amount) < 0) {
+        if (fromOwner.getWallet().getFiatBalance().compareTo(originalAmount) < 0) {
             throw new BadRequestException("Insufficient fiat balance");
         }
 
+        BigDecimal formattedAmound = originalAmount.setScale(2, RoundingMode.HALF_UP);
         // Update balances
-        fromOwner.getWallet().setFiatBalance(fromOwner.getWallet().getFiatBalance().subtract(amount));
-        toOwner.getWallet().setFiatBalance(toOwner.getWallet().getFiatBalance().add(amount));
+        fromOwner.getWallet().setFiatBalance(fromOwner.getWallet().getFiatBalance().subtract(formattedAmound));
+        toOwner.getWallet().setFiatBalance(toOwner.getWallet().getFiatBalance().add(formattedAmound));
 
         // Create transaction records
         FiatTransaction fromTransaction = FiatTransaction.builder()
                 .owner(fromOwner)
-                .amount(amount.negate()) // Negative for outflow
+                .amount(formattedAmound.negate()) // Negative for outflow
                 .currency(CurrencyType.FIAT)
                 .concept(TransactionConcept.PAYMENT)
                 .transactionDate(Instant.now())
@@ -57,7 +59,7 @@ public class DefaultPayWithFiat implements PayWithFiat {
 
         FiatTransaction toTransaction = FiatTransaction.builder()
                 .owner(toOwner)
-                .amount(amount) // Positive for inflow
+                .amount(formattedAmound) // Positive for inflow
                 .currency(CurrencyType.FIAT)
                 .concept(TransactionConcept.RECEIPT)
                 .transactionDate(Instant.now())

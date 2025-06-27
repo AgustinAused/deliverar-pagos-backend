@@ -134,7 +134,7 @@ public class WalletCreationCommand extends AsyncBaseCommand {
 
         if (WALLET_CREATION_REQUEST == eventType) {
             owner.setName((String) payload.get("name"));
-            owner.setOwnerType(OwnerType.DELIVERY);
+            owner.setOwnerType(OwnerType.CLIENT);
         }
         return owner;
     }

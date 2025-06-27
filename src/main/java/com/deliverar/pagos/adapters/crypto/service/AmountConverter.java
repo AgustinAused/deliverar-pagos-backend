@@ -1,9 +1,13 @@
 package com.deliverar.pagos.adapters.crypto.service;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class AmountConverter {
     private static final int DECIMALS = 2;
     private static final BigDecimal SCALE_FACTOR = BigDecimal.TEN.pow(DECIMALS);
@@ -14,7 +18,7 @@ public class AmountConverter {
      */
     public static BigInteger toInteger(BigDecimal amount) {
         BigDecimal scaled = amount.multiply(SCALE_FACTOR)
-                .setScale(0, RoundingMode.UNNECESSARY);
+                .setScale(0, RoundingMode.HALF_UP);
         return scaled.toBigIntegerExact();
     }
 
@@ -24,6 +28,6 @@ public class AmountConverter {
      */
     public static BigDecimal toDecimal(BigInteger amount) {
         return new BigDecimal(amount)
-                .divide(SCALE_FACTOR, DECIMALS, RoundingMode.UNNECESSARY);
+                .divide(SCALE_FACTOR, DECIMALS, RoundingMode.HALF_UP);
     }
 }
